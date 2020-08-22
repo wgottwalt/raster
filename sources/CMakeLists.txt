@@ -1,0 +1,3 @@
+#ADD_SUBDIRECTORY    (Common)
+#ADD_SUBDIRECTORY    (Math)
+ADD_SUBDIRECTORY    (Tests)
