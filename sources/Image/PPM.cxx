@@ -1,3 +1,4 @@
+#include <fstream>
 #include <utility>
 #include "Common/Tools.hxx"
 #include "PPM.hxx"
@@ -13,6 +14,12 @@ namespace Image
     PPM::PPM() noexcept
     : Base(), _comment(""), _wide(false), _binary(false)
     {
+    }
+
+    PPM::PPM(const std::string &filename)
+    : Base(), _comment(""), _wide(false), _binary(false)
+    {
+        load(filename);
     }
 
     PPM::PPM(const int64_t width, const int64_t height, const RGBA color)
@@ -92,6 +99,43 @@ namespace Image
 
     //--- public methods ---
 
+    std::string PPM::comment() const
+    {
+        return _comment;
+    }
+
+    void PPM::setComment(const std::string &str)
+    {
+        _comment = str;
+    }
+
+    bool PPM::wideMode() const
+    {
+        return _wide;
+    }
+
+    void PPM::setWideMode(const bool wide)
+    {
+        _wide = wide;
+    }
+
+    bool PPM::binaryMode() const
+    {
+        return _binary;
+    }
+
+    void PPM::setBinaryMode(const bool bin)
+    {
+        _binary = bin;
+    }
+
+    bool PPM::valid() const
+    {
+        // having no pixels, aka a width/height of 0 is considert invalid, but the PPM image format
+        // supports it
+        return width() && height() && (pixels().size() == static_cast<size_t>(width() * height()));
+    }
+
     PPM::RGBA PPM::pixel(const int64_t x, const int64_t y) const
     {
         if (T::inRange(x, 0, width()) && T::inRange(y, 0, height()))
@@ -151,10 +195,183 @@ namespace Image
         return false;
     }
 
+    bool PPM::setCircle(const int64_t x, const int64_t y, const int64_t radius, const RGBA color,
+                        const bool fill)
+    {
+        const int64_t rad = std::abs(radius);
+
+        if (T::inRange(x, 0, width()) && T::inRange(y, 0, height()) &&
+          T::inRange(x + rad, 0, width()) && T::inRange(x - rad, 0, width()) &&
+          T::inRange(y + rad, 0, height()) && T::inRange(y - rad, 0, height()))
+        {
+            implSetCircle(x, y, radius, color, fill);
+            return true;
+        }
+
+        return false;
+    }
+
     bool PPM::resize(const int64_t width, const int64_t height, const Scaler scaler)
     {
         if (T::inRange(width, 4, MaxWidth) && T::inRange(height, 4, MaxHeight))
             return implResize(width, height, scaler);
+
+        return false;
+    }
+
+    bool PPM::save(const std::string &filename) const
+    {
+        if (!valid())
+            return false;
+
+        if (std::ofstream ofile(filename); ofile.is_open() && ofile.good())
+        {
+            if (_binary)
+                ofile << "P6\n";
+            else
+                ofile << "P3\n";
+
+            // multiline comments can be tricky, so need to catch newlines
+            if (!_comment.empty())
+            {
+                size_t i = 0;
+
+                ofile << "# ";
+                for (i = 0; i < _comment.size(); ++i)
+                {
+                    if (_comment[i] == '\n')
+                        ofile << "# ";
+                    ofile << _comment[i];
+                }
+                if (_comment[i] != '\n')
+                    ofile << '\n';
+            }
+            ofile << width() << ' ' << height() << '\n' << (_wide ? MaxWidth : 255) << '\n';
+
+            if (!_wide && !_binary)
+                for (auto &pixel : pixels())
+                    ofile << static_cast<uint16_t>(pixel.rh) << ' '
+                          << static_cast<uint16_t>(pixel.gh) << ' '
+                          << static_cast<uint16_t>(pixel.bh) << '\n';
+            else if (!_wide && _binary)
+                for (auto &pixel : pixels())
+                    ofile.put(pixel.c1).put(pixel.c3).put(pixel.c5);
+            else if (_wide && !_binary)
+                for (auto &pixel : pixels())
+                    ofile << pixel.r << ' ' << pixel.g << ' ' << pixel.b << '\n';
+            else if (_wide && _binary)
+                for (auto &pixel : pixels())
+                    ofile.put(pixel.c1).put(pixel.c2).put(pixel.c3).put(pixel.c4).put(pixel.c5)
+                         .put(pixel.c6);
+            ofile.close();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    bool PPM::load(const std::string &filename)
+    {
+        if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
+        {
+            std::string comment;
+            std::string line;
+            Pixels pixels;
+            int64_t width = 0;
+            int64_t height = 0;
+            int64_t colors = 0;
+            int64_t binary = false;
+
+            std::getline(ifile, line);
+            if (!line.compare("P6"))
+                binary = true;
+            else if (!line.compare("P3"))
+                binary = false;
+            else
+            {
+                ifile.close();
+                return false;
+            }
+
+            // comments can be all over the header, which can be really anoying
+            while ((ifile.peek() == '#') && std::getline(ifile, line))
+                comment += T::trim(line.substr(1, std::string::npos)) + '\n';
+            ifile >> width;
+            while ((ifile.peek() == '#') && std::getline(ifile, line))
+                comment += T::trim(line.substr(1, std::string::npos)) + '\n';
+            ifile >> height;
+            while ((ifile.peek() == '#') && std::getline(ifile, line))
+                comment += T::trim(line.substr(1, std::string::npos)) + '\n';
+            ifile >> colors;
+
+            // there is ONE newline at the end of the header .. then pixel data starts
+            if (ifile.peek() == '\n')
+                ifile.get();
+
+            if (!T::inRange(width, 0, MaxWidth) || !T::inRange(height, 0, MaxHeight) ||
+              !T::inRange(colors, 1, MaxWidth))
+            {
+                ifile.close();
+                return false;
+            }
+
+            pixels.resize(width * height, RGBA::Black);
+            if (!binary)
+            {
+                uint32_t tmp = 0;
+
+                for (auto &pixel : pixels)
+                {
+                    ifile >> tmp;
+                    pixel.r = tmp * MaxWidth / colors;
+                    ifile >> tmp;
+                    pixel.g = tmp * MaxWidth / colors;
+                    ifile >> tmp;
+                    pixel.b = tmp * MaxWidth / colors;
+                }
+            }
+            else if (binary && (colors < 256))
+            {
+                for (auto &pixel : pixels)
+                {
+                    ifile.get(pixel.c2).get(pixel.c4).get(pixel.c6);
+                    pixel.r = pixel.r * MaxWidth / colors;
+                    pixel.g = pixel.g * MaxWidth / colors;
+                    pixel.b = pixel.b * MaxWidth / colors;
+                }
+            }
+            else if (binary && (colors > 255))
+                for (auto &pixel : pixels)
+                    ifile.get(pixel.c1).get(pixel.c2).get(pixel.c3).get(pixel.c4).get(pixel.c5)
+                         .get(pixel.c6);
+            ifile.close();
+
+            implReplace(pixels, width, height);
+            _comment = comment;
+            _wide = (colors > 255) ? true : false;
+            _binary = binary;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    //--- static public methods ---
+
+    bool PPM::identify(const std::string &filename)
+    {
+        if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
+        {
+            std::string line;
+
+            std::getline(ifile, line);
+            ifile.close();
+
+            if ((line.substr(0, 2) == "P3") || (line.substr(0, 2) == "P6"))
+                return true;
+        }
 
         return false;
     }
