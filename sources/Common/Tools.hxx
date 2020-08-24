@@ -2,10 +2,13 @@
 
 #include <cmath>
 #include <limits>
+#include <string>
 #include "Concepts.hxx"
 
 namespace Common::Tools
 {
+    //--- compare functions ---
+
     template <Concept::Number T, Concept::Number L, Concept::Number R>
     inline bool inRange(const T val, const L min = std::numeric_limits<T>::min(),
                         const R max = std::numeric_limits<T>::max(), const bool include_min = true,
@@ -62,4 +65,10 @@ namespace Common::Tools
     {
         return val1 < val2 ? std::tuple<T,T>(val2, val1) : std::tuple<T,T>(val1, val2);
     }
+
+    //--- string manipulation ---
+
+    std::string trim(const std::string &data, const char delim, const bool at_start = true,
+                     const bool at_end = true);
+    std::string trim(const std::string &data, const bool at_start = true, const bool at_end = true);
 }
