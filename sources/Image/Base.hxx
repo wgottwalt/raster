@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <vector>
 #include <X11/Xlib.h>
 #include "Color/RGBA16161616.hxx"
@@ -25,10 +26,14 @@ namespace Image
     };
 
     enum class Quantizer : int16_t {
-        MiddleCut
+        MiddleCut // actually a "fucked up" median cut algorithm, results are okay-ish
     };
 
-    //--- Image base class, mostly used as interface ---
+    //
+    // Base Image class - provides all the pixel manipulation methods, an interface every derived
+    //                    class has to follow and it holds the actuall image data
+    //
+
     class Base {
     public:
         //--- public types and constants ---
@@ -59,6 +64,7 @@ namespace Image
         bool filter(const Filter filter);
         XImage *cloneXImage(Display *display, Visual *visual) const;
 
+        virtual bool valid() const = 0;
         virtual RGBA pixel(const int64_t x, const int64_t y) const = 0;
         virtual bool setPixel(const int64_t x, const int64_t y, const RGBA color) = 0;
         virtual bool setLine(const int64_t x1, const int64_t y1, const int64_t x2, const int64_t y2,
@@ -68,11 +74,11 @@ namespace Image
                                  const RGBA color, const bool fill) = 0;
         virtual bool setRectangle(const int64_t x1, const int64_t y1, const int64_t x2,
                                   const int64_t y2, const RGBA color, const bool fill) = 0;
-#if 0
         virtual bool setCircle(const int64_t x, const int64_t y, const int64_t radius,
                                const RGBA color, const bool fill) = 0;
-#endif
         virtual bool resize(const int64_t width, const int64_t height, const Scaler scaler) = 0;
+        virtual bool save(const std::string &filename) const = 0;
+        virtual bool load(const std::string &filename) = 0;
 
     protected:
         //--- protected methods ---
@@ -83,10 +89,8 @@ namespace Image
                              const int64_t x3, const int64_t y3, const RGBA color, const bool fill);
         void implSetRectangle(const int64_t x1, const int64_t y1, const int64_t x2,
                               const int64_t y2, const RGBA color, const bool fill);
-#if 0
         void implSetCircle(const int64_t x, const int64_t y, const int64_t radius, const RGBA color,
                            const bool fill);
-#endif
         Pixels implFilter(const Pixels &pixels, const int64_t width, const int64_t height,
                           const Filter filter) const;
         bool implResize(const int64_t width, const int64_t height, const Scaler scaler);

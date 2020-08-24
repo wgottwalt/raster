@@ -298,6 +298,86 @@ namespace Image
         }
     }
 
+    void Base::implSetCircle(const int64_t x, const int64_t y, const int64_t radius,
+                             const RGBA color, const bool fill)
+    {
+        const int64_t rad = std::abs(radius);
+
+        if (((x + rad) > _width) || ((y + rad) > _height) || ((x - rad) < 0) || ((y - rad) < 0))
+            return;
+
+        if (radius != 0)
+        {
+            const int64_t ypos = y * _width;
+            int64_t delta_ypos = 0;
+            int64_t f = 1 - rad;
+            int64_t delta_x = 0;
+            int64_t delta_y = -2 * rad;
+            int64_t xx = 0;
+            int64_t yy = rad;
+
+            _data[ypos + x + rad] = color;
+            _data[ypos + x - rad] = color;
+            if (!fill)
+            {
+                _data[ypos + (rad * _width) + x] = color;
+                _data[ypos - (rad * _width) + x] = color;
+            }
+            else
+                implSetLine(x - rad, y, x + rad, y, color);
+
+            if (fill)
+            {
+                while (xx < yy)
+                {
+                    if (f >= 0)
+                    {
+                        --yy;
+                        delta_y += 2;
+                        f += delta_y;
+                    }
+                    ++xx;
+                    delta_x += 2;
+                    f += delta_x + 1;
+
+                    implSetLine(x - xx, y + yy, x + xx, y + yy, color);
+                    implSetLine(x - xx, y - yy, x + xx, y - yy, color);
+                    implSetLine(x - yy, y + xx, x + yy, y + xx, color);
+                    implSetLine(x - yy, y - xx, x + yy, y - xx, color);
+                }
+            }
+            else
+            {
+                while (xx < yy)
+                {
+                    if (f >= 0)
+                    {
+                        --yy;
+                        delta_y += 2;
+                        f += delta_y;
+                    }
+                    ++xx;
+                    delta_x += 2;
+                    f += delta_x + 1;
+
+                    delta_ypos = yy * _width;
+                    _data[ypos + delta_ypos + x + xx] = color;
+                    _data[ypos + delta_ypos + x - xx] = color;
+                    _data[ypos - delta_ypos + x + xx] = color;
+                    _data[ypos - delta_ypos + x - xx] = color;
+                    delta_ypos = ypos + (xx * _width);
+                    _data[delta_ypos + x + yy] = color;
+                    _data[delta_ypos + x - yy] = color;
+                    delta_ypos = ypos - (xx * _width);
+                    _data[delta_ypos + x + yy] = color;
+                    _data[delta_ypos + x - yy] = color;
+                }
+            }
+        }
+        else
+            _data[y * _width + x] = color;
+    }
+
     Base::Pixels Base::implFilter(const Pixels &pixels, const int64_t width, const int64_t height,
                                   const Filter filter) const
     {
