@@ -5,7 +5,7 @@
 const int64_t width = 800;
 const int64_t height = 600;
 
-int32_t main()
+int32_t main(int32_t argc, char **argv)
 {
     Image::PPM ppm(width, height, Image::PPM::RGBA::Black);
     Display *display = XOpenDisplay(nullptr);
@@ -22,6 +22,16 @@ int32_t main()
     ppm.setTriangle(width / 2, 35, 35, height - 36, width - 36, height - 36, Image::PPM::RGBA::Blue, true);
     ppm.setRectangle(200, 200, width - 200, height - 200, Image::PPM::RGBA::Green, true);
     ppm.setRectangle(210, 210, width - 210, height - 210, Image::PPM::RGBA::Black, false);
+    ppm.setCircle(width / 2, height / 2, (std::min(width, height) / 2) - (std::min(width, height) / 3), Image::PPM::RGBA::White, false);
+    ppm.setCircle(width / 2, height / 2, (std::min(width, height) / 2) - (std::min(width, height) / 3) - 5, Image::PPM::RGBA::White, true);
+
+    if (argc == 2)
+    {
+        ppm.setComment("created by " + std::string(argv[0]));
+        ppm.setWideMode();
+        ppm.setBinaryMode();
+        ppm.save(argv[1]);
+    }
 
     XImage *ximage = ppm.cloneXImage(display, visual);
 
@@ -43,6 +53,8 @@ int32_t main()
             case ButtonPress:
                 XDestroyImage(ximage);
                 ppm.filter(Image::Filter::Smooth);
+                ppm.flipHorizontal();
+                ppm.resize(width - (loop + 1) * 50, height - (loop + 1) * 50, Image::Scaler::FastBillinear);
                 ximage = ppm.cloneXImage(display, visual);
                 XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 0, 0, ppm.width(),
                           ppm.height());
