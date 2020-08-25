@@ -97,6 +97,15 @@ int32_t main(int32_t argc, char **argv)
                 image->resize(image->width(), scaleh, Image::Scaler::FastBillinear);
             }
 
+            if (arg.substr(0, 9) == "--colors=")
+            {
+                const int64_t to_colors = std::stoi(arg.substr(9, std::string::npos));
+                const int64_t colors = image->usedColors();
+
+                image->reduceColors(to_colors, I::Quantizer::MiddleCut);
+                std::cout << "used colors " << colors << " reduced to " << to_colors << std::endl;
+            }
+
             if (arg.substr(0, 9) == "--filter=")
             {
                 arg = arg.substr(9, std::string::npos);
@@ -118,7 +127,6 @@ int32_t main(int32_t argc, char **argv)
 
     if (image)
     {
-        std::cout << "used colors: " << image->usedColors() << std::endl;
         view(image, filename);
         delete image;
     }
