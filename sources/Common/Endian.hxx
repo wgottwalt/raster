@@ -6,6 +6,7 @@
 namespace Common::Endian
 {
     //--- basic constants ---
+
     enum class Order : int32_t {
         Little = __ORDER_LITTLE_ENDIAN__,
         Big = __ORDER_BIG_ENDIAN__,
@@ -81,4 +82,110 @@ namespace Common::Endian
     {
         return fromBE(val);
     }
+
+    //--- helper types ---
+
+    union Union8 {
+        uint8_t u;
+        int8_t s;
+        uint8_t u1;
+        int8_t s1;
+        char c1;
+    };
+
+    union Union16 {
+        uint16_t u;
+        int16_t s;
+        struct {
+#if defined __ORDER_LITTLE_ENDIAN__
+            uint8_t u1, u2;
+#elif defined __ORDER_BIG_ENDIAN__
+            uint8_t u2, u1;
+#else
+#error "fucked up endianness"
+#endif
+        };
+        struct {
+#if defined __ORDER_LITTLE_ENDIAN__
+            int8_t s1, s2;
+#elif defined __ORDER_BIG_ENDIAN__
+            int8_t s2, s1;
+#else
+#error "fucked up endianness"
+#endif
+        };
+        struct {
+#if defined __ORDER_LITTLE_ENDIAN__
+            char c1, c2;
+#elif defined __ORDER_BIG_ENDIAN__
+            char c2, c1;
+#else
+#error "fucked up endianness"
+#endif
+        };
+    };
+
+    union Union32 {
+        uint32_t u;
+        int32_t s;
+        struct {
+#if defined __ORDER_LITTLE_ENDIAN__
+            uint8_t u1, u2, u3, u4;
+#elif defined __ORDER_BIG_ENDIAN__
+            uint8_t u4, u3, u2, u1;
+#else
+#error "fucked up endianness"
+#endif
+        };
+        struct {
+#if defined __ORDER_LITTLE_ENDIAN__
+            int8_t s1, s2, s3, s4;
+#elif defined __ORDER_BIG_ENDIAN__
+            int8_t s4, s3, s2, s1;
+#else
+#error "fucked up endianness"
+#endif
+        };
+        struct {
+#if defined __ORDER_LITTLE_ENDIAN__
+            char c1, c2, c3, c4;
+#elif defined __ORDER_BIG_ENDIAN__
+            char c4, c3, c2, c1;
+#else
+#error "fucked up endianness"
+#endif
+        };
+    };
+
+    union Union64 {
+        uint64_t u;
+        int64_t s;
+        struct {
+#if defined __ORDER_LITTLE_ENDIAN__
+            uint8_t u1, u2, u3, u4, u5, u6, u7, u8;
+#elif defined __ORDER_BIG_ENDIAN__
+            uint8_t u8, u7, u6, u5, u4, u3, u2, u1;
+#else
+#error "fucked up endianness"
+#endif
+        };
+        struct {
+#if defined __ORDER_LITTLE_ENDIAN__
+            int8_t s1, s2, s3, s4, s5, s6, s7, s8;
+#elif defined __ORDER_BIG_ENDIAN__
+            int8_t s8, s7, s6, s5, s4, s3, s2, s1;
+#else
+#error "fucked up endianness"
+#endif
+        };
+        struct {
+#if defined __ORDER_LITTLE_ENDIAN__
+            char c1, c2, c3, c4, c5, c6, c7, c8;
+#elif defined __ORDER_BIG_ENDIAN__
+            char c8, c7, c6, c5, c4, c3, c2, c1;
+#else
+#error "fucked up endianness"
+#endif
+        };
+    };
 }
