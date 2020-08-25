@@ -3,6 +3,7 @@
 #include <map>
 #include <tuple>
 #include <utility>
+#include "Color/Quantize.hxx"
 #include "Common/Tools.hxx"
 #include "Math/Vector2.hxx"
 #include "Base.hxx"
@@ -144,6 +145,25 @@ namespace Image
         }
 
         return false;
+    }
+
+    bool Base::reduceColors(const int64_t colors, const Quantizer quantizer)
+    {
+        Pixels out_pixels;
+        Pixels palette;
+        bool result = false;
+
+        switch (quantizer)
+        {
+            case Quantizer::MiddleCut:
+                result = Color::Quantize::middleCut<RGBA>(_width, _height, colors, _data,
+                                                          out_pixels, palette);
+        }
+
+        if (result)
+            implReplace(out_pixels, _width, _height);
+
+        return result;
     }
 
     XImage *Base::cloneXImage(Display *display, Visual *visual) const

@@ -26,14 +26,13 @@ namespace Image
     };
 
     enum class Quantizer : int16_t {
-        MiddleCut // actually a "fucked up" median cut algorithm, results are okay-ish
+        MiddleCut // actually a "fucked up" median cut algorithm, results are okay-ish, but slow
     };
 
     //
     // Base Image class - provides all the pixel manipulation methods, an interface every derived
-    //                    class has to follow and it holds the actuall image data
+    //                    class has to follow and holds the actual image data
     //
-
     class Base {
     public:
         //--- public types and constants ---
@@ -62,6 +61,7 @@ namespace Image
         void flipVertical();
         void flipHorizontal();
         bool filter(const Filter filter);
+        bool reduceColors(const int64_t colors, const Quantizer quantizer);
         XImage *cloneXImage(Display *display, Visual *visual) const;
 
         virtual bool valid() const = 0;
