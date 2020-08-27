@@ -4,6 +4,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include "Common/Tools.hxx"
+#include "Image/Farbfeld.hxx"
 #include "Image/PPM.hxx"
 
 namespace T = Common::Tools;
@@ -64,6 +65,8 @@ int32_t main(int32_t argc, char **argv)
         filename = argv[1];
         if (I::PPM::identify(filename))
             image = new I::PPM(filename);
+        if (I::Farbfeld::identify(filename))
+            image = new I::Farbfeld(filename);
     }
     else
     {
