@@ -218,6 +218,8 @@ namespace Image
 
             ifile.get(width.c1).get(width.c2).get(width.c3).get(width.c4);
             ifile.get(height.c1).get(height.c2).get(height.c3).get(height.c4);
+            width.u = E::fromBE(width.u);
+            height.u = E::fromBE(height.u);
             if ((size - 16) != (width.u * height.u * sizeof (RGBA)))
             {
                 ifile.close();
@@ -260,6 +262,7 @@ namespace Image
                 ifile.close();
                 return false;
             }
+
             ifile.close();
 
             return true;
