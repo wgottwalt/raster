@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <string>
@@ -67,6 +68,35 @@ namespace Common::Tools
     }
 
     //--- string manipulation ---
+
+    template <typename T1, typename T2>
+    size_t countSubSequences(T1 from_it, T2 to_it, T1 search_from_it, T2 search_to_it)
+    {
+        const ssize_t source_seq_size = std::distance(from_it, to_it);
+        const ssize_t search_seq_size = std::distance(search_from_it, search_to_it);
+        size_t result = 0;
+
+        if (search_seq_size > source_seq_size)
+            return 0;
+
+        const T1 max_it = from_it + (source_seq_size - search_seq_size);
+        for (T1 it = from_it; it <= max_it; ++it)
+        {
+            if (std::equal(it, it + search_seq_size, search_from_it))
+            {
+                ++result;
+                it += search_seq_size;
+            }
+        }
+
+        return result;
+    }
+
+    template <typename T>
+    size_t countSubSequences(const T &val1, const T &val2)
+    {
+        return countSubSequences(val1.begin(), val1.end(), val2.begin(), val2.end());
+    }
 
     std::string trim(const std::string &data, const char delim, const bool at_start = true,
                      const bool at_end = true);
