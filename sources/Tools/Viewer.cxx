@@ -4,8 +4,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include "Common/Tools.hxx"
-#include "Image/Farbfeld.hxx"
-#include "Image/PPM.hxx"
+#include "Image/Image.hxx"
 
 namespace T = Common::Tools;
 namespace I = Image;
@@ -52,7 +51,16 @@ void view(I::Base *base_image, std::string &title)
 
 void usage(const std::string &appname)
 {
-    std::cout << "usage: " << appname << " <image filename>" << std::endl;
+    std::cout << "usage: " << appname << " <image filename> [options]\n"
+              << "options:\n"
+              << "  --help          this help screen\n"
+              << "  --fliph         flip horizontal\n"
+              << "  --flipv         flip vertical\n"
+              << "  --scalew=<num>  scale width to <num> pixels\n"
+              << "  --scaleh=<num>  scale height to <num> pixels\n"
+              << "  --colors=<num>  reduce amount of colors to <num>\n"
+              << "  --filter=<flt>  apply filter <flt> (smooth, sharpen, edge, blur, raised)\n"
+              << std::endl;
 }
 
 int32_t main(int32_t argc, char **argv)
@@ -63,15 +71,23 @@ int32_t main(int32_t argc, char **argv)
     if ((argc > 1) && std::ifstream(argv[1]))
     {
         filename = argv[1];
-        if (I::PPM::identify(filename))
-            image = new I::PPM(filename);
+
         if (I::Farbfeld::identify(filename))
             image = new I::Farbfeld(filename);
+        if (I::PPM::identify(filename))
+            image = new I::PPM(filename);
+        if (I::Simple00::identify(filename))
+            image = new I::Simple00(filename);
+        if (I::Simple01::identify(filename))
+        {
+            image = new I::Simple01(filename);
+            std::cout << "dbg viewer: " << image->width() << " " << image->height() << std::endl;
+        }
     }
     else
     {
         usage(argv[0]);
-        return 1;
+        return 0;
     }
 
     if (image && (argc > 2))
@@ -79,6 +95,12 @@ int32_t main(int32_t argc, char **argv)
         for (int32_t i = 2; i < argc; ++i)
         {
             std::string arg(argv[i]);
+
+            if (arg.substr(0, 6) == "--help")
+            {
+                usage(argv[0]);
+                return 0;
+            }
 
             if (arg.substr(0, 7) == "--fliph")
                 image->flipHorizontal();
