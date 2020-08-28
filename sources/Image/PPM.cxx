@@ -213,7 +213,7 @@ namespace Image
 
     bool PPM::resize(const int64_t width, const int64_t height, const Scaler scaler)
     {
-        if (T::inRange(width, 4, MaxWidth) && T::inRange(height, 4, MaxHeight))
+        if ((width <= MaxWidth) && (height <= MaxHeight))
             return implResize(width, height, scaler);
 
         return false;
