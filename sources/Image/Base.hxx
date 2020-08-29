@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <X11/Xlib.h>
-#include "Color/RGBA16161616.hxx"
+#include "Color/Color.hxx"
 #include "Common/Concepts.hxx"
 
 namespace Image
