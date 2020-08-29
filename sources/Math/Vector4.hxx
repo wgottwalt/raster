@@ -83,6 +83,21 @@ namespace Math
         }
 
         //---
+        Vector4 &operator-() noexcept
+        {
+            x = -x;
+            y = -y;
+            z = -z;
+            w = -w;
+
+            return *this;
+        }
+
+        Vector4 operator-() const noexcept
+        {
+            return {-x, -y, -z, -w};
+        }
+
         Vector4 &operator+=(const Vector4 &vec) noexcept
         {
             x += vec.x;

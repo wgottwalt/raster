@@ -77,6 +77,19 @@ namespace Math
         }
 
         //---
+        Vector2 &operator-() noexcept
+        {
+            x = -x;
+            y = -y;
+
+            return *this;
+        }
+
+        Vector2 operator-() const noexcept
+        {
+            return {-x, -y};
+        }
+
         Vector2 &operator+=(const Vector2 &rhs) noexcept
         {
             x += rhs.x;

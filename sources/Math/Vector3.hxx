@@ -80,6 +80,20 @@ namespace Math
         }
 
         //---
+        Vector3 &operator-() noexcept
+        {
+            x = -x;
+            y = -y;
+            z = -z;
+
+            return *this;
+        }
+
+        Vector3 operator-() const noexcept
+        {
+            return {-x, -y, -z};
+        }
+
         Vector3 &operator+=(const Vector3 &vec) noexcept
         {
             x += vec.x;
