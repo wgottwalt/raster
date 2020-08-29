@@ -62,20 +62,19 @@ namespace Image
         void flipHorizontal();
         bool filter(const Filter filter);
         bool reduceColors(const int64_t colors, const Quantizer quantizer);
+        RGBA pixel(const int64_t x, const int64_t y) const;
+        bool setPixel(const int64_t x, const int64_t y, const RGBA color);
+        bool setLine(const int64_t x1, const int64_t y1, const int64_t x2, const int64_t y2,
+                     const RGBA color);
+        bool setTriangle(const int64_t x1, const int64_t y1, const int64_t x2, const int64_t y2,
+                         const int64_t x3, const int64_t y3, const RGBA color, const bool fill);
+        bool setRectangle(const int64_t x1, const int64_t y1, const int64_t x2, const int64_t y2,
+                          const RGBA color, const bool fill);
+        bool setCircle(const int64_t x, const int64_t y, const int64_t radius, const RGBA color,
+                       const bool fill);
         XImage *cloneXImage(Display *display, Visual *visual) const;
 
         virtual bool valid() const = 0;
-        virtual RGBA pixel(const int64_t x, const int64_t y) const = 0;
-        virtual bool setPixel(const int64_t x, const int64_t y, const RGBA color) = 0;
-        virtual bool setLine(const int64_t x1, const int64_t y1, const int64_t x2, const int64_t y2,
-                             const RGBA color) = 0;
-        virtual bool setTriangle(const int64_t x1, const int64_t y1, const int64_t x2,
-                                 const int64_t y2, const int64_t x3, const int64_t y3,
-                                 const RGBA color, const bool fill) = 0;
-        virtual bool setRectangle(const int64_t x1, const int64_t y1, const int64_t x2,
-                                  const int64_t y2, const RGBA color, const bool fill) = 0;
-        virtual bool setCircle(const int64_t x, const int64_t y, const int64_t radius,
-                               const RGBA color, const bool fill) = 0;
         virtual bool resize(const int64_t width, const int64_t height, const Scaler scaler) = 0;
         virtual bool save(const std::string &filename) const = 0;
         virtual bool load(const std::string &filename) = 0;

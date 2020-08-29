@@ -36,18 +36,6 @@ namespace Image
         void setBinaryMode(const bool bin = true);
 
         virtual bool valid() const override final;
-        virtual RGBA pixel(const int64_t x, const int64_t y) const override final;
-        virtual bool setPixel(const int64_t x, const int64_t y, const RGBA color) override final;
-        virtual bool setLine(const int64_t x1, const int64_t y1, const int64_t x2, const int64_t y2,
-                             const RGBA color) override final;
-        virtual bool setTriangle(const int64_t x1, const int64_t y1, const int64_t x2,
-                                 const int64_t y2, const int64_t x3, const int64_t y3,
-                                 const RGBA color, const bool fill) override final;
-        virtual bool setRectangle(const int64_t x1, const int64_t y1, const int64_t x2,
-                                  const int64_t y2, const RGBA color, const bool fill)
-                                  override final;
-        virtual bool setCircle(const int64_t x, const int64_t y, const int64_t radius,
-                               const RGBA color, const bool fill) override final;
         virtual bool resize(const int64_t width, const int64_t height, const Scaler scaler)
                             override final;
         virtual bool save(const std::string &filename) const override final;
