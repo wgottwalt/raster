@@ -8,6 +8,14 @@
 
 namespace Common::Tools
 {
+    //--- value/type extractors ---
+
+    template <typename T>
+    constexpr inline typename std::underlying_type<T>::type valueOf(const T &val) noexcept
+    {
+        return static_cast<typename std::underlying_type<T>::type>(val);
+    }
+
     //--- compare functions ---
 
     template <Concept::Number T, Concept::Number L, Concept::Number R>
@@ -65,6 +73,16 @@ namespace Common::Tools
     constexpr inline std::tuple<T,T> maxMin(const T val1, const T val2) noexcept
     {
         return val1 < val2 ? std::tuple<T,T>(val2, val1) : std::tuple<T,T>(val1, val2);
+    }
+
+    //--- list checking ---
+
+    template <typename T, typename H, typename ...Tail>
+    constexpr inline bool includes(const T val, const H head, const Tail... tail) noexcept
+    {
+        if constexpr (sizeof... (tail) > 0)
+            return (val == head) || includes(val, tail...);
+        return val == head;
     }
 
     //--- string manipulation ---
