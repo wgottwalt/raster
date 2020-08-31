@@ -3,7 +3,7 @@
 #include <map>
 #include <tuple>
 #include <utility>
-#include "Color/Quantize.hxx"
+#include "Color/MiddleCutQuantizer.hxx"
 #include "Common/Tools.hxx"
 #include "Math/Vector2.hxx"
 #include "Base.hxx"

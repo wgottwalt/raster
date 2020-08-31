@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RGBA16161616.hxx"
-#include "Quantize.hxx"
+#include "MiddleCutQuantizer.hxx"
 
 namespace Color
 {

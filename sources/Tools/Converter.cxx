@@ -42,6 +42,8 @@ int32_t main(int32_t argc, char **argv)
             const std::string simple1(".sp1");
             const std::string simple2(".simple00");
             const std::string simple3(".simple01");
+            const std::string tga1(".tga");
+            const std::string tga2(".targa");
 
             if (Image::Farbfeld::identify(ifilename))
                 in_image = std::make_shared<Image::Farbfeld>(ifilename);
@@ -51,6 +53,8 @@ int32_t main(int32_t argc, char **argv)
                 in_image = std::make_shared<Image::Simple00>(ifilename);
             else if (Image::Simple01::identify(ifilename))
                 in_image = std::make_shared<Image::Simple01>(ifilename);
+            else if (Image::Targa::identify(ifilename))
+                in_image = std::make_shared<Image::Targa>(ifilename);
 
             if (in_image)
             {
@@ -68,6 +72,13 @@ int32_t main(int32_t argc, char **argv)
                   T::countSubSequences(ofilename, simple3))
                     out_image = std::make_shared<Image::Simple01>(in_image->pixels(),
                                 in_image->width(), in_image->height());
+                else if (T::countSubSequences(ofilename, tga1) ||
+                  T::countSubSequences(ofilename, tga2))
+                {
+                    out_image = std::make_shared<Image::Targa>(in_image->pixels(),
+                                in_image->width(), in_image->height());
+                    std::dynamic_pointer_cast<Image::Targa>(out_image)->setImageType(Image::Targa::ImageType::Mapped);
+                }
             }
         }
 
