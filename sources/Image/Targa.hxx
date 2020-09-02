@@ -13,9 +13,8 @@ namespace Image
     // - proper handles 15/16 bit data even in mapped mode
     // - recognizes Targa spec 1.0 and 2.0, but only writes empty 2.0 footers (supporting this would
     //   blow this project out of scope, no seriously, did someone ever use the footers?!?)
-    // - supports the fuckup in the spec 1.0 and 2.0, aka scanlined and non-scanlined RLE encoding,
-    //   but only writes the 2.0 spec scanlined RLE data (how Targa RLE works was tested in the
-    //   Simple01 image format, I'm going to use this here)
+    // - supports the fuckup in the spec 1.0 and 2.0, aka scanlined and non-scanlined RLE encoding
+    //   (how Targa RLE works was tested in the Simple01 image format, I'm going to use this here)
     // - there are two propreitary pixel encodings I can not support, because I'm not able to find
     //   a spec descriping these
     //
@@ -102,9 +101,12 @@ namespace Image
 
     protected:
         //--- protected methods ---
-        std::string genMappedData(Pixels &palette, const Pixels &pixels, const uint16_t col) const;
+        std::string genMappedData(Pixels &palette, const Pixels &pixels) const;
         std::string genTruecolorData(const Pixels &pixels) const;
         std::string genMonoData(const Pixels &pixels) const;
+        std::string genMappedRleData(Pixels &palette, const Pixels &pixels) const;
+        std::string genTruecolorRleData(const Pixels &pixels) const;
+        std::string genMonoRleData(const Pixels &pixels) const;
 
     private:
         //--- private properties ---
