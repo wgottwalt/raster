@@ -8,12 +8,15 @@
 namespace Image
 {
     //--- internal stuff ---
+
     namespace C = Color;
     namespace E = Common::Endian;
     namespace Q = C::Quantize;
     namespace T = Common::Tools;
     using IT = Targa::ImageType;
     using IA = Targa::ImageAttribute;
+
+    const std::string Signature("\0\0\0\0\0\0\0\0TRUEVISION-XFILE.\0");
 
     //--- public constructors ---
 
@@ -425,6 +428,8 @@ namespace Image
                         palette_data.reserve(_colormap_length * 2);
                         for (const auto &pixel : palette)
                         {
+                            // this is weird, the colors in the palette are different from the
+                            // format used in pure pixel data
                             tmp.u = 0;
                             tmp.u |= (pixel.rh >> 3) << 10;
                             tmp.u |= (pixel.gh >> 3) << 5;
@@ -476,7 +481,7 @@ namespace Image
 
             // footer
             if (_version2)
-                ofile.write("\0\0\0\0\0\0\0\0TRUEVISION-XFILE.\0", 26);
+                ofile.write(Signature.c_str(), Signature.size());
 
             ofile.close();
 
@@ -488,6 +493,93 @@ namespace Image
 
     bool Targa::load(const std::string &filename)
     {
+        if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
+        {
+            const size_t size = ifile.seekg(0, std::ios::end).tellg();
+            Pixels pixels;
+            std::string id;
+            std::string palette;
+            Header header;
+            Footer footer;
+            bool version2;
+
+            if (size < sizeof (header))
+            {
+                ifile.close();
+                return false;
+            }
+
+            ifile.seekg(size - sizeof (footer), std::ios::beg);
+            ifile.read(reinterpret_cast<char *>(&footer), sizeof (footer));
+            ifile.seekg(0, std::ios::beg);
+            ifile.read(reinterpret_cast<char *>(&header), sizeof (header));
+
+            if (header.id)
+            {
+                id.resize(header.id, '\0');
+                ifile.read(id.data(), id.size());
+            }
+
+            if (std::string(footer.signature).substr(0, Signature.size()) == Signature)
+                version2 = true;
+            else
+                version2 = false;
+
+            switch (header.image_type)
+            {
+                case IT::NoData:
+                    // XXX: implement the actual pixel loader method
+                    break;
+
+                case IT::Mapped:
+                    // XXX: implement the actual pixel loader method
+                    break;
+
+                case IT::Truecolor:
+                    // XXX: implement the actual pixel loader method
+                    break;
+
+                case IT::Mono:
+                    // XXX: implement the actual pixel loader method
+                    break;
+
+                case IT::MappedRLE:
+                    // XXX: implement the actual pixel loader method
+                    break;
+
+                case IT::TruecolorRLE:
+                    // XXX: implement the actual pixel loader method
+                    break;
+
+                case IT::MonoRLE:
+                    // XXX: implement the actual pixel loader method
+                    break;
+
+                case IT::MappedAll:
+                case IT::MappedAllQuad:
+                    throw std::logic_error("propreitary features are not supported");
+            }
+            ifile.close();
+
+            if (pixels.size() != (header.width * header.height))
+                return false;
+
+            _colormap_type = header.colormap_type;
+            _image_type = header.image_type;
+            _colormap_offset = header.colormap_offset;
+            _colormap_length = header.colormap_length;
+            _colormap_entry_size = header.colormap_entry_size;
+            _x_origin = header.x_origin;
+            _y_origin = header.y_origin;
+            _depth = header.depth;
+            _image_descriptor = header.image_descriptor;
+            _image_id = id;
+            _version2 = version2;
+
+            return true;
+        }
+
+        return false;
     }
 
     //--- static public methods ---
