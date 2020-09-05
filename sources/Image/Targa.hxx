@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iosfwd>
 #include <limits>
 #include <string>
 #include "Base.hxx"
@@ -107,6 +108,8 @@ namespace Image
         std::string genMappedRleData(Pixels &palette, const Pixels &pixels) const;
         std::string genTruecolorRleData(const Pixels &pixels) const;
         std::string genMonoRleData(const Pixels &pixels) const;
+        Pixels loadMonoData(std::istream &is, const Header header) const;
+        Pixels loadMonoRleData(std::istream &is, const Header header) const;
 
     private:
         //--- private properties ---

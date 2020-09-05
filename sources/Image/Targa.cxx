@@ -529,30 +529,35 @@ namespace Image
             {
                 case IT::NoData:
                     // XXX: implement the actual pixel loader method
+                    throw "not implemented yet";
                     break;
 
                 case IT::Mapped:
                     // XXX: implement the actual pixel loader method
+                    throw "not implemented yet";
                     break;
 
                 case IT::Truecolor:
                     // XXX: implement the actual pixel loader method
+                    throw "not implemented yet";
                     break;
 
                 case IT::Mono:
-                    // XXX: implement the actual pixel loader method
+                    pixels = loadMonoData(ifile, header);
                     break;
 
                 case IT::MappedRLE:
                     // XXX: implement the actual pixel loader method
+                    throw "not implemented yet";
                     break;
 
                 case IT::TruecolorRLE:
                     // XXX: implement the actual pixel loader method
+                    throw "not implemented yet";
                     break;
 
                 case IT::MonoRLE:
-                    // XXX: implement the actual pixel loader method
+                    pixels = loadMonoRleData(ifile, header);
                     break;
 
                 case IT::MappedAll:
@@ -564,6 +569,7 @@ namespace Image
             if (pixels.size() != (header.width * header.height))
                 return false;
 
+            implReplace(pixels, header.width, header.height);
             _colormap_type = header.colormap_type;
             _image_type = header.image_type;
             _colormap_offset = header.colormap_offset;
@@ -1188,5 +1194,54 @@ namespace Image
         }
 
         return data;
+    }
+
+    Targa::Pixels Targa::loadMonoData(std::istream &is, const Header header) const
+    {
+        Pixels pixels(header.width * header.height);
+        E::Union8 tmp;
+
+        for (auto &pixel : pixels)
+        {
+            is.read(&tmp.c1, sizeof (tmp.c1));
+            pixel = tmp.u ? RGBA::White : RGBA::Black;
+        }
+
+        return pixels;
+    }
+
+    Targa::Pixels Targa::loadMonoRleData(std::istream &is, const Header header) const
+    {
+        const size_t size = header.width * header.height;
+        Pixels pixels;
+        RGBA pixel;
+        size_t count = 0;
+        E::Union8 rle;
+        char tmp;
+
+        while ((pixels.size() < size) && !is.eof())
+        {
+            is.get(rle.c1);
+            count = (rle.u & 128) ? ((rle.u & ~128) + 1) : (rle.u + 1);
+
+            if (rle.u & 128)
+            {
+                is.get(tmp);
+                pixel = tmp ? RGBA::White : RGBA::Black;
+                for (size_t i = 0; i < count; ++i)
+                    pixels.push_back(pixel);
+            }
+            else
+            {
+                for (size_t i = 0; i < count; ++i)
+                {
+                    is.get(tmp);
+                    pixel = tmp ? RGBA::White : RGBA::Black;
+                    pixels.push_back(pixel);
+                }
+            }
+        }
+
+        return pixels;
     }
 }
