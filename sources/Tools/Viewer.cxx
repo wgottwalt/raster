@@ -74,15 +74,17 @@ int32_t main(int32_t argc, char **argv)
 
         if (I::Farbfeld::identify(filename))
             image = new I::Farbfeld(filename);
-        if (I::PPM::identify(filename))
+        else if (I::PPM::identify(filename))
             image = new I::PPM(filename);
-        if (I::Simple00::identify(filename))
+        else if (I::Simple00::identify(filename))
             image = new I::Simple00(filename);
-        if (I::Simple01::identify(filename))
+        else if (I::Simple01::identify(filename))
         {
             image = new I::Simple01(filename);
             std::cout << "dbg viewer: " << image->width() << " " << image->height() << std::endl;
         }
+        else if (I::Targa::identify(filename))
+            image = new I::Targa(filename);
     }
     else
     {
