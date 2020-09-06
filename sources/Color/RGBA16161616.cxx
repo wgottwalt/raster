@@ -91,6 +91,18 @@ namespace Color
         return value != rhs.value;
     }
 
+    RGBA16161616 RGBA16161616::operator>>(const uint16_t val) const noexcept
+    {
+        return {static_cast<uint16_t>(r >> val), static_cast<uint16_t>(g >> val),
+                static_cast<uint16_t>(b >> val), static_cast<uint16_t>(a >> val)};
+    }
+
+    RGBA16161616 RGBA16161616::operator<<(const uint16_t val) const noexcept
+    {
+        return {static_cast<uint16_t>(r << val), static_cast<uint16_t>(g << val),
+                static_cast<uint16_t>(b << val), static_cast<uint16_t>(a << val)};
+    }
+
     //--- public methods ---
 
     RGBA16161616 &RGBA16161616::set(const uint64_t val) noexcept
@@ -136,5 +148,10 @@ namespace Color
     {
         return (static_cast<uint32_t>(r) + static_cast<uint32_t>(g) + static_cast<uint32_t>(b) +
                 static_cast<uint32_t>(a)) / 4;
+    }
+
+    uint16_t RGBA16161616::grey() const noexcept
+    {
+        return 0.299083 * r + 0.585841 * g + 0.114076 * b;
     }
 }

@@ -58,6 +58,8 @@ namespace Color
         RGBA16161616 &operator=(RGBA16161616 &&rhs) noexcept;
         bool operator==(const RGBA16161616 &rhs) const noexcept;
         bool operator!=(const RGBA16161616 &rhs) const noexcept;
+        RGBA16161616 operator>>(const uint16_t val) const noexcept;
+        RGBA16161616 operator<<(const uint16_t val) const noexcept;
 
         //--- public methods ---
         RGBA16161616 &set(const uint64_t val) noexcept;
@@ -68,5 +70,6 @@ namespace Color
                           const uint8_t aah, const uint8_t aal) noexcept;
         uint16_t averageRGB() const noexcept;
         uint16_t averageRGBA() const noexcept;
+        uint16_t grey() const noexcept;
     };
 }
