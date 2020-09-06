@@ -75,6 +75,16 @@ namespace Common::Tools
         return val1 < val2 ? std::tuple<T,T>(val2, val1) : std::tuple<T,T>(val1, val2);
     }
 
+    template <Concept::Number T, Concept::Number L, Concept::Number R>
+    constexpr inline T clamp(const T val, const L min, const R max) noexcept
+    {
+        if (val < min)
+            return min;
+        else if (val > max)
+            return max;
+        return val;
+    }
+
     //--- list checking ---
 
     template <typename T, typename H, typename ...Tail>
