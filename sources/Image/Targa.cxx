@@ -528,13 +528,11 @@ namespace Image
             switch (header.image_type)
             {
                 case IT::NoData:
-                    // XXX: implement the actual pixel loader method
-                    throw "not implemented yet";
+                    // nothing to do here
                     break;
 
                 case IT::Mapped:
-                    // XXX: implement the actual pixel loader method
-                    throw "not implemented yet";
+                    pixels = loadMappedData(ifile, header);
                     break;
 
                 case IT::Truecolor:
@@ -1275,6 +1273,76 @@ namespace Image
         }
 
         return data;
+    }
+
+    Targa::Pixels Targa::loadMappedData(std::istream &is, const Header header) const
+    {
+        const size_t mapsize = header.colormap_length;
+        Pixels colormap(mapsize, RGBA::Black);
+        Pixels pixels(header.width * header.height);
+        E::Union8 tmp;
+
+        switch (header.colormap_entry_size)
+        {
+            case 15:
+            case 16:
+            {
+                const bool alpha_bit = header.image_descriptor & 0x01;
+                E::Union16 tmp_color;
+
+                for (size_t i = 0; i < mapsize; ++i)
+                {
+                    is.get(tmp_color.c1).get(tmp_color.c2);
+                    colormap[i].r = (tmp_color.u & 0b0111110000000000) << 1;
+                    colormap[i].g = (tmp_color.u & 0b0000001111100000) << 6;
+                    colormap[i].b = (tmp_color.u & 0b0000000000011111) << 11;
+                    // maybe useless, feh, gimp and even imagemagick do not check for this bit, so
+                    // alpha channel support in 16bit mapped colors is ignored, but the spec says it
+                    // is possible and supported
+                    colormap[i].a = (alpha_bit & (tmp_color.u >> 15)) ? 0xFFFF : 0;
+                }
+
+                break;
+            }
+
+            case 24:
+            {
+                for (size_t i = 0; i < mapsize; ++i)
+                {
+                    colormap[i].b = is.get() << 8;
+                    colormap[i].g = is.get() << 8;
+                    colormap[i].r = is.get() << 8;
+                    colormap[i].a = 0xFFFF;
+                }
+
+                break;
+            }
+
+            case 32:
+            {
+                for (size_t i = 0; i < mapsize; ++i)
+                {
+                    colormap[i].b = is.get() << 8;
+                    colormap[i].g = is.get() << 8;
+                    colormap[i].r = is.get() << 8;
+                    colormap[i].a = is.get() << 8;
+                }
+
+                break;
+            }
+
+            default:
+                throw std::logic_error("out of spec mapped colors depth (" +
+                                       std::to_string(header.colormap_entry_size) + ")");
+        }
+
+        for (auto &pixel : pixels)
+        {
+            is.get(tmp.c1);
+            pixel = colormap[tmp.u];
+        }
+
+        return pixels;
     }
 
     Targa::Pixels Targa::loadMonoData(std::istream &is, const Header header) const
