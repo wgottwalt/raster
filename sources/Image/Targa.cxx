@@ -1111,13 +1111,94 @@ namespace Image
     std::string Targa::genMonoRleData(const Pixels &pixels) const
     {
         const size_t size = pixels.size();
+        const size_t w = width();
+        const size_t h = height();
+        std::vector<uint16_t> tpxls(size, 0);
         std::vector<uint8_t> buffer;
         std::string tmp(size, '\0');
         std::string data;
         size_t count = 0;
 
         for (size_t i = 0; i < size; ++i)
-            tmp[i] = (pixels[i].averageRGB() > 0x7FFF) ? 0xFF : 0x0;
+            tpxls[i] = pixels[i].grey();
+
+        for (size_t y = 0; y < h; ++y)
+        {
+            for (size_t x = 0; x < w; ++x)
+            {
+                const int32_t orgp = tpxls[y * w + x];
+                const int32_t newp = (tpxls[y * w + x] > 0x7FFF) ? 0xFFFF : 0;
+                const int32_t err = orgp - newp;
+
+                tpxls[y * w + x] = newp;
+                // burkes algorithm
+                if (x < (w - 1))
+                {
+                    auto &p = tpxls[y * w + x + 1];
+                    p = T::clamp(static_cast<int32_t>(p) + ((err << 3) >> 5), 0, 0xFFFF);
+                }
+                if (x < (w - 2))
+                {
+                    auto &p = tpxls[y * w + x + 2];
+                    p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, 0xFFFF);
+                }
+                if (y < (h - 1))
+                {
+                    const size_t pos = (y + 1) * w + x;
+                    auto &tp = tpxls[pos];
+
+                    if (x > 1)
+                    {
+                        auto &p = tpxls[pos - 2];
+                        p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, 0xFFFF);
+                    }
+                    if (x > 1)
+                    {
+                        auto &p = tpxls[pos - 1];
+                        p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, 0xFFFF);
+                    }
+                    tp = T::clamp(static_cast<int32_t>(tp) + ((err << 3) >> 5), 0, 0xFFFF);
+                    if (x < (w - 1))
+                    {
+                        auto &p = tpxls[pos + 1];
+                        p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, 0xFFFF);
+                    }
+                    if (x < (w - 2))
+                    {
+                        auto &p = tpxls[pos + 2];
+                        p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, 0xFFFF);
+                    }
+                }
+#if 0
+                // floyd steinberg algorithm
+                if (x < (w - 1))
+                {
+                    auto &p = tpxls[y * w + x + 1];
+                    p = T::clamp(static_cast<int32_t>(p) + err * 7 / 16, 0, 0xFFFF);
+                }
+                if (y < (h - 1))
+                {
+                    const size_t pos = (y + 1) * w + x;
+                    auto &tp = tpxls[pos];
+
+                    if (x > 0)
+                    {
+                        auto &p = tpxls[pos - 1];
+                        p = T::clamp(static_cast<int32_t>(p) + err * 3 / 16, 0, 0xFFFF);
+                    }
+                    tp = T::clamp(static_cast<int32_t>(tp) + err * 5 / 16, 0, 0xFFFF);
+                    if (x < (w - 1))
+                    {
+                        auto &p = tpxls[pos + 1];
+                        p = T::clamp(static_cast<int32_t>(p) + err / 16, 0, 0xFFFF);
+                    }
+                }
+#endif
+            }
+        }
+
+        for (size_t i = 0; i < size; ++i)
+            tmp[i] = tpxls[i] >> 8;
 
         if (_version2)
         {
@@ -1204,7 +1285,8 @@ namespace Image
         for (auto &pixel : pixels)
         {
             is.read(&tmp.c1, sizeof (tmp.c1));
-            pixel = tmp.u ? RGBA::White : RGBA::Black;
+            pixel = {tmp.u, tmp.u, tmp.u, 255};
+            pixel = pixel << 8;
         }
 
         return pixels;
@@ -1217,7 +1299,7 @@ namespace Image
         RGBA pixel;
         size_t count = 0;
         E::Union8 rle;
-        char tmp;
+        E::Union8 tmp;
 
         while ((pixels.size() < size) && !is.eof())
         {
@@ -1226,8 +1308,9 @@ namespace Image
 
             if (rle.u & 128)
             {
-                is.get(tmp);
-                pixel = tmp ? RGBA::White : RGBA::Black;
+                is.get(tmp.c1);
+                pixel = {tmp.u, tmp.u, tmp.u, 255};
+                pixel = pixel << 8;
                 for (size_t i = 0; i < count; ++i)
                     pixels.push_back(pixel);
             }
@@ -1235,8 +1318,9 @@ namespace Image
             {
                 for (size_t i = 0; i < count; ++i)
                 {
-                    is.get(tmp);
-                    pixel = tmp ? RGBA::White : RGBA::Black;
+                    is.get(tmp.c1);
+                    pixel = {tmp.u, tmp.u, tmp.u, 255};
+                    pixel = pixel << 8;
                     pixels.push_back(pixel);
                 }
             }
