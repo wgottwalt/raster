@@ -536,8 +536,7 @@ namespace Image
                     break;
 
                 case IT::Truecolor:
-                    // XXX: implement the actual pixel loader method
-                    throw "not implemented yet";
+                    pixels = loadTruecolorData(ifile, header);
                     break;
 
                 case IT::Mono:
@@ -1292,6 +1291,7 @@ namespace Image
 
                 for (size_t i = 0; i < mapsize; ++i)
                 {
+                    // XXX: 16bit color data looks weird, needs a check on a big endian machine
                     is.get(tmp_color.c1).get(tmp_color.c2);
                     colormap[i].r = (tmp_color.u & 0b0111110000000000) << 1;
                     colormap[i].g = (tmp_color.u & 0b0000001111100000) << 6;
@@ -1340,6 +1340,65 @@ namespace Image
         {
             is.get(tmp.c1);
             pixel = colormap[tmp.u];
+        }
+
+        return pixels;
+    }
+
+    Targa::Pixels Targa::loadTruecolorData(std::istream &is, const Header header) const
+    {
+        Pixels pixels(header.width * header.height);
+
+        switch (header.depth)
+        {
+            case 15:
+            case 16:
+            {
+                const bool alpha_bit = header.image_descriptor & 0x01;
+                E::Union16 tmp;
+
+                for (auto &pixel : pixels)
+                {
+                    // XXX: 16bit color data looks weird, needs a check on a big endian machine
+                    is.get(tmp.c1).get(tmp.c2);
+                    pixel.r = (tmp.u & 0b0111110000000000) << 1;
+                    pixel.g = (tmp.u & 0b0000001111100000) << 6;
+                    pixel.b = (tmp.u & 0b0000000000011111) << 11;
+                    pixel.a = (alpha_bit & (tmp.u >> 15)) * 0xFFFF;
+                }
+
+                break;
+            }
+
+            case 24:
+            {
+                for (auto &pixel : pixels)
+                {
+                    pixel.b = is.get() << 8;
+                    pixel.g = is.get() << 8;
+                    pixel.r = is.get() << 8;
+                    pixel.a = 0xFFFF;
+                }
+
+                break;
+            }
+
+            case 32:
+            {
+                for (auto &pixel : pixels)
+                {
+                    pixel.b = is.get() << 8;
+                    pixel.g = is.get() << 8;
+                    pixel.r = is.get() << 8;
+                    pixel.a = is.get() << 8;
+                }
+
+                break;
+            }
+
+            default:
+                throw std::logic_error("out of spec mapped colors depth (" +
+                                       std::to_string(header.depth) + ")");
         }
 
         return pixels;
