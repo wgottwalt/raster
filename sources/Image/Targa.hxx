@@ -91,9 +91,11 @@ namespace Image
         bool isVersion2() const;
         void setVersion2(const bool val);
         int64_t xOrigin() const;
-        bool setXOrigin(const int64_t xo);
+        bool setXOrigin(const int64_t val);
         int64_t yOrigin() const;
-        bool setYOrigin(const int64_t yo);
+        bool setYOrigin(const int64_t val);
+        bool greyscaleMonochromeMode() const;
+        void setGreyscaleMonochromeMode(const bool val);
 
         virtual bool valid() const override final;
         virtual bool resize(const int64_t width, const int64_t height, const Scaler scaler)
@@ -131,5 +133,6 @@ namespace Image
         uint8_t _image_descriptor;
         std::string _image_id;
         bool _version2;
+        bool _greyscale;
     };
 }

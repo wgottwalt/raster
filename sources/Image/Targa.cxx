@@ -24,14 +24,16 @@ namespace Image
     Targa::Targa() noexcept
     : Base(), _colormap_type(0), _image_type(IT::Truecolor), _colormap_offset(0),
       _colormap_length(0), _colormap_entry_size(0), _x_origin(0), _y_origin(0), _depth(24),
-      _image_descriptor(T::valueOf(IA::OriginTop)), _image_id(""), _version2(false)
+      _image_descriptor(T::valueOf(IA::OriginTop)), _image_id(""), _version2(false),
+      _greyscale(false)
     {
     }
 
     Targa::Targa(const std::string &filename)
     : Base(), _colormap_type(0), _image_type(IT::Truecolor), _colormap_offset(0),
       _colormap_length(0), _colormap_entry_size(0), _x_origin(0), _y_origin(0), _depth(24),
-      _image_descriptor(T::valueOf(IA::OriginTop)), _image_id(""), _version2(false)
+      _image_descriptor(T::valueOf(IA::OriginTop)), _image_id(""), _version2(false),
+      _greyscale(false)
     {
         load(filename);
     }
@@ -41,14 +43,16 @@ namespace Image
            T::inRange(height, MinHeight, MaxHeight) ? height : 0, color),
       _colormap_type(0), _image_type(IT::Truecolor), _colormap_offset(0),
       _colormap_length(0), _colormap_entry_size(0), _x_origin(0), _y_origin(0), _depth(24),
-      _image_descriptor(T::valueOf(IA::OriginTop)), _image_id(""), _version2(false)
+      _image_descriptor(T::valueOf(IA::OriginTop)), _image_id(""), _version2(false),
+      _greyscale(false)
     {
     }
 
     Targa::Targa(const Pixels &pixels, const int64_t width, const int64_t height)
     : Base(), _colormap_type(0), _image_type(IT::Truecolor), _colormap_offset(0),
       _colormap_length(0), _colormap_entry_size(0), _x_origin(0), _y_origin(0), _depth(24),
-      _image_descriptor(T::valueOf(IA::OriginTop)), _image_id(""), _version2(false)
+      _image_descriptor(T::valueOf(IA::OriginTop)), _image_id(""), _version2(false),
+      _greyscale(false)
     {
         if (T::inRange(width, MinWidth, MaxWidth) && T::inRange(height, MinHeight, MaxHeight) &&
           (pixels.size() == static_cast<size_t>(width * height)))
@@ -60,7 +64,7 @@ namespace Image
       _colormap_offset(rhs._colormap_offset), _colormap_length(rhs._colormap_length),
       _colormap_entry_size(rhs._colormap_entry_size), _x_origin(rhs._x_origin),
       _y_origin(rhs._y_origin), _depth(rhs._depth), _image_descriptor(rhs._image_descriptor),
-      _image_id(rhs._image_id), _version2(rhs._version2)
+      _image_id(rhs._image_id), _version2(rhs._version2), _greyscale(rhs._greyscale)
     {
     }
 
@@ -71,7 +75,8 @@ namespace Image
       _colormap_entry_size(std::move(rhs._colormap_entry_size)),
       _x_origin(std::move(rhs._x_origin)), _y_origin(std::move(rhs._y_origin)),
       _depth(std::move(rhs._depth)), _image_descriptor(std::move(rhs._image_descriptor)),
-      _image_id(std::move(rhs._image_id)), _version2(std::move(rhs._version2))
+      _image_id(std::move(rhs._image_id)), _version2(std::move(rhs._version2)),
+      _greyscale(std::move(rhs._greyscale))
     {
     }
 
@@ -97,6 +102,7 @@ namespace Image
             _image_descriptor = rhs._image_descriptor;
             _image_id = rhs._image_id;
             _version2 = rhs._version2;
+            _greyscale = rhs._greyscale;
         }
 
         return *this;
@@ -118,6 +124,7 @@ namespace Image
             _image_descriptor = std::move(rhs._image_descriptor);
             _image_id = std::move(rhs._image_id);
             _version2 = std::move(rhs._version2);
+            _greyscale = std::move(rhs._greyscale);
         }
 
         return *this;
@@ -136,7 +143,8 @@ namespace Image
                _depth == rhs._depth &&
                _image_descriptor == rhs._image_descriptor &&
                _image_id == rhs._image_id &&
-               _version2 == rhs._version2;
+               _version2 == rhs._version2 &&
+               _greyscale == rhs._greyscale;
     }
 
     bool Targa::operator!=(const Targa &rhs) const noexcept
@@ -159,7 +167,7 @@ namespace Image
 
     Targa::ImageType Targa::imageType() const
     {
-        return static_cast<IT>(_image_type);
+        return _image_type;
     }
 
     void Targa::setImageType(const ImageType type)
@@ -327,11 +335,11 @@ namespace Image
         return _x_origin;
     }
 
-    bool Targa::setXOrigin(const int64_t xo)
+    bool Targa::setXOrigin(const int64_t val)
     {
-        if (T::inRange(xo, 0, MaxU16))
+        if (T::inRange(val, 0, MaxU16))
         {
-            _x_origin = xo;
+            _x_origin = val;
             return true;
         }
 
@@ -343,15 +351,25 @@ namespace Image
         return _y_origin;
     }
 
-    bool Targa::setYOrigin(const int64_t yo)
+    bool Targa::setYOrigin(const int64_t val)
     {
-        if (T::inRange(yo, 0, MaxU16))
+        if (T::inRange(val, 0, MaxU16))
         {
-            _y_origin = yo;
+            _y_origin = val;
             return true;
         }
 
         return false;
+    }
+
+    bool Targa::greyscaleMonochromeMode() const
+    {
+        return _greyscale;
+    }
+
+    void Targa::setGreyscaleMonochromeMode(const bool val)
+    {
+        _greyscale = val;
     }
 
     bool Targa::valid() const
@@ -746,10 +764,17 @@ namespace Image
     {
         std::string data;
 
-        // Targa actually uses bytes for mono data, which is a huge waste of space, but it makes
-        // generating the pixel data quite easy
-        for (const auto &pixel : pixels)
-            data += (pixel.averageRGB() > 0x7FFF) ? 0xFF : 0x0;
+        data.reserve(pixels.size());
+        if (_greyscale)
+        {
+            for (const auto &pixel : pixels)
+                data += pixel.grey() >> 8;
+        }
+        else
+        {
+            for (const auto &pixel : pixels)
+                data += (pixel.grey() > 0x7FFF) ? 0xFF : 0x0;
+        }
 
         return data;
     }
@@ -1140,94 +1165,103 @@ namespace Image
     std::string Targa::genMonoRleData(const Pixels &pixels) const
     {
         const size_t size = pixels.size();
-        const size_t w = width();
-        const size_t h = height();
-        std::vector<uint16_t> tpxls(size, 0);
         std::vector<uint8_t> buffer;
         std::string tmp(size, '\0');
         std::string data;
         size_t count = 0;
 
-        for (size_t i = 0; i < size; ++i)
-            tpxls[i] = pixels[i].grey();
-
-        for (size_t y = 0; y < h; ++y)
+        if (_greyscale)
         {
-            for (size_t x = 0; x < w; ++x)
+            for (size_t i = 0; i < size; ++i)
+                tmp[i] = pixels[i].grey() >> 8;
+        }
+        else
+        {
+            const size_t w = width();
+            const size_t h = height();
+            std::vector<uint16_t> tpxls(size, 0);
+
+            for (size_t i = 0; i < size; ++i)
+                tpxls[i] = pixels[i].grey();
+
+            for (size_t y = 0; y < h; ++y)
             {
-                const int32_t orgp = tpxls[y * w + x];
-                const int32_t newp = (tpxls[y * w + x] > 0x7FFF) ? MaxU16 : 0;
-                const int32_t err = orgp - newp;
+                for (size_t x = 0; x < w; ++x)
+                {
+                    const int32_t orgp = tpxls[y * w + x];
+                    const int32_t newp = (tpxls[y * w + x] > 0x7FFF) ? MaxU16 : 0;
+                    const int32_t err = orgp - newp;
 
-                tpxls[y * w + x] = newp;
-                // burkes algorithm
-                if (x < (w - 1))
-                {
-                    auto &p = tpxls[y * w + x + 1];
-                    p = T::clamp(static_cast<int32_t>(p) + ((err << 3) >> 5), 0, MaxU16);
-                }
-                if (x < (w - 2))
-                {
-                    auto &p = tpxls[y * w + x + 2];
-                    p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
-                }
-                if (y < (h - 1))
-                {
-                    const size_t pos = (y + 1) * w + x;
-                    auto &tp = tpxls[pos];
-
-                    if (x > 1)
-                    {
-                        auto &p = tpxls[pos - 2];
-                        p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, MaxU16);
-                    }
-                    if (x > 1)
-                    {
-                        auto &p = tpxls[pos - 1];
-                        p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
-                    }
-                    tp = T::clamp(static_cast<int32_t>(tp) + ((err << 3) >> 5), 0, MaxU16);
+                    tpxls[y * w + x] = newp;
+                    // burkes algorithm
                     if (x < (w - 1))
                     {
-                        auto &p = tpxls[pos + 1];
-                        p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
+                        auto &p = tpxls[y * w + x + 1];
+                        p = T::clamp(static_cast<int32_t>(p) + ((err << 3) >> 5), 0, MaxU16);
                     }
                     if (x < (w - 2))
                     {
-                        auto &p = tpxls[pos + 2];
-                        p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, MaxU16);
+                        auto &p = tpxls[y * w + x + 2];
+                        p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
                     }
-                }
-#if 0
-                // floyd steinberg algorithm
-                if (x < (w - 1))
-                {
-                    auto &p = tpxls[y * w + x + 1];
-                    p = T::clamp(static_cast<int32_t>(p) + err * 7 / 16, 0, MaxU16);
-                }
-                if (y < (h - 1))
-                {
-                    const size_t pos = (y + 1) * w + x;
-                    auto &tp = tpxls[pos];
-
-                    if (x > 0)
+                    if (y < (h - 1))
                     {
-                        auto &p = tpxls[pos - 1];
-                        p = T::clamp(static_cast<int32_t>(p) + err * 3 / 16, 0, MaxU16);
+                        const size_t pos = (y + 1) * w + x;
+                        auto &tp = tpxls[pos];
+
+                        if (x > 1)
+                        {
+                            auto &p = tpxls[pos - 2];
+                            p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, MaxU16);
+                        }
+                        if (x > 1)
+                        {
+                            auto &p = tpxls[pos - 1];
+                            p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
+                        }
+                        tp = T::clamp(static_cast<int32_t>(tp) + ((err << 3) >> 5), 0, MaxU16);
+                        if (x < (w - 1))
+                        {
+                            auto &p = tpxls[pos + 1];
+                            p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
+                        }
+                        if (x < (w - 2))
+                        {
+                            auto &p = tpxls[pos + 2];
+                            p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, MaxU16);
+                        }
                     }
-                    tp = T::clamp(static_cast<int32_t>(tp) + err * 5 / 16, 0, MaxU16);
+#if 0
+                    // floyd steinberg algorithm
                     if (x < (w - 1))
                     {
-                        auto &p = tpxls[pos + 1];
-                        p = T::clamp(static_cast<int32_t>(p) + err / 16, 0, MaxU16);
+                        auto &p = tpxls[y * w + x + 1];
+                        p = T::clamp(static_cast<int32_t>(p) + err * 7 / 16, 0, MaxU16);
                     }
-                }
-#endif
-            }
-        }
+                    if (y < (h - 1))
+                    {
+                        const size_t pos = (y + 1) * w + x;
+                        auto &tp = tpxls[pos];
 
-        for (size_t i = 0; i < size; ++i)
-            tmp[i] = tpxls[i] >> 8;
+                        if (x > 0)
+                        {
+                            auto &p = tpxls[pos - 1];
+                            p = T::clamp(static_cast<int32_t>(p) + err * 3 / 16, 0, MaxU16);
+                        }
+                        tp = T::clamp(static_cast<int32_t>(tp) + err * 5 / 16, 0, MaxU16);
+                        if (x < (w - 1))
+                        {
+                            auto &p = tpxls[pos + 1];
+                            p = T::clamp(static_cast<int32_t>(p) + err / 16, 0, MaxU16);
+                        }
+                    }
+#endif
+                }
+            }
+
+            for (size_t i = 0; i < size; ++i)
+                tmp[i] = tpxls[i] >> 8;
+        }
 
         if (_version2)
         {
