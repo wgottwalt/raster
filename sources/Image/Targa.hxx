@@ -90,6 +90,10 @@ namespace Image
         bool setDepth(const uint8_t val);
         bool isVersion2() const;
         void setVersion2(const bool val);
+        int64_t xOrigin() const;
+        bool setXOrigin(const int64_t xo);
+        int64_t yOrigin() const;
+        bool setYOrigin(const int64_t yo);
 
         virtual bool valid() const override final;
         virtual bool resize(const int64_t width, const int64_t height, const Scaler scaler)

@@ -17,6 +17,7 @@ namespace Image
     using IA = Targa::ImageAttribute;
 
     const std::string Signature("\0\0\0\0\0\0\0\0TRUEVISION-XFILE.\0");
+    const uint16_t MaxU16 = std::numeric_limits<uint16_t>::max();
 
     //--- public constructors ---
 
@@ -319,6 +320,38 @@ namespace Image
     {
         // setting version 2 (Targa spec 2.0) actually lowers RLE compression effiency
         _version2 = val;
+    }
+
+    int64_t Targa::xOrigin() const
+    {
+        return _x_origin;
+    }
+
+    bool Targa::setXOrigin(const int64_t xo)
+    {
+        if (T::inRange(xo, 0, MaxU16))
+        {
+            _x_origin = xo;
+            return true;
+        }
+
+        return false;
+    }
+
+    int64_t Targa::yOrigin() const
+    {
+        return _y_origin;
+    }
+
+    bool Targa::setYOrigin(const int64_t yo)
+    {
+        if (T::inRange(yo, 0, MaxU16))
+        {
+            _y_origin = yo;
+            return true;
+        }
+
+        return false;
     }
 
     bool Targa::valid() const
@@ -1124,7 +1157,7 @@ namespace Image
             for (size_t x = 0; x < w; ++x)
             {
                 const int32_t orgp = tpxls[y * w + x];
-                const int32_t newp = (tpxls[y * w + x] > 0x7FFF) ? 0xFFFF : 0;
+                const int32_t newp = (tpxls[y * w + x] > 0x7FFF) ? MaxU16 : 0;
                 const int32_t err = orgp - newp;
 
                 tpxls[y * w + x] = newp;
@@ -1132,12 +1165,12 @@ namespace Image
                 if (x < (w - 1))
                 {
                     auto &p = tpxls[y * w + x + 1];
-                    p = T::clamp(static_cast<int32_t>(p) + ((err << 3) >> 5), 0, 0xFFFF);
+                    p = T::clamp(static_cast<int32_t>(p) + ((err << 3) >> 5), 0, MaxU16);
                 }
                 if (x < (w - 2))
                 {
                     auto &p = tpxls[y * w + x + 2];
-                    p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, 0xFFFF);
+                    p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
                 }
                 if (y < (h - 1))
                 {
@@ -1147,23 +1180,23 @@ namespace Image
                     if (x > 1)
                     {
                         auto &p = tpxls[pos - 2];
-                        p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, 0xFFFF);
+                        p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, MaxU16);
                     }
                     if (x > 1)
                     {
                         auto &p = tpxls[pos - 1];
-                        p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, 0xFFFF);
+                        p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
                     }
-                    tp = T::clamp(static_cast<int32_t>(tp) + ((err << 3) >> 5), 0, 0xFFFF);
+                    tp = T::clamp(static_cast<int32_t>(tp) + ((err << 3) >> 5), 0, MaxU16);
                     if (x < (w - 1))
                     {
                         auto &p = tpxls[pos + 1];
-                        p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, 0xFFFF);
+                        p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
                     }
                     if (x < (w - 2))
                     {
                         auto &p = tpxls[pos + 2];
-                        p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, 0xFFFF);
+                        p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, MaxU16);
                     }
                 }
 #if 0
@@ -1171,7 +1204,7 @@ namespace Image
                 if (x < (w - 1))
                 {
                     auto &p = tpxls[y * w + x + 1];
-                    p = T::clamp(static_cast<int32_t>(p) + err * 7 / 16, 0, 0xFFFF);
+                    p = T::clamp(static_cast<int32_t>(p) + err * 7 / 16, 0, MaxU16);
                 }
                 if (y < (h - 1))
                 {
@@ -1181,13 +1214,13 @@ namespace Image
                     if (x > 0)
                     {
                         auto &p = tpxls[pos - 1];
-                        p = T::clamp(static_cast<int32_t>(p) + err * 3 / 16, 0, 0xFFFF);
+                        p = T::clamp(static_cast<int32_t>(p) + err * 3 / 16, 0, MaxU16);
                     }
-                    tp = T::clamp(static_cast<int32_t>(tp) + err * 5 / 16, 0, 0xFFFF);
+                    tp = T::clamp(static_cast<int32_t>(tp) + err * 5 / 16, 0, MaxU16);
                     if (x < (w - 1))
                     {
                         auto &p = tpxls[pos + 1];
-                        p = T::clamp(static_cast<int32_t>(p) + err / 16, 0, 0xFFFF);
+                        p = T::clamp(static_cast<int32_t>(p) + err / 16, 0, MaxU16);
                     }
                 }
 #endif
@@ -1299,7 +1332,7 @@ namespace Image
                     // maybe useless, feh, gimp and even imagemagick do not check for this bit, so
                     // alpha channel support in 16bit mapped colors is ignored, but the spec says it
                     // is possible and supported
-                    colormap[i].a = (alpha_bit & (tmp_color.u >> 15)) ? 0xFFFF : 0;
+                    colormap[i].a = (alpha_bit & (tmp_color.u >> 15)) ? MaxU16 : 0;
                 }
 
                 break;
@@ -1312,7 +1345,7 @@ namespace Image
                     colormap[i].b = is.get() << 8;
                     colormap[i].g = is.get() << 8;
                     colormap[i].r = is.get() << 8;
-                    colormap[i].a = 0xFFFF;
+                    colormap[i].a = MaxU16;
                 }
 
                 break;
@@ -1364,7 +1397,7 @@ namespace Image
                     pixel.r = (tmp.u & 0b0111110000000000) << 1;
                     pixel.g = (tmp.u & 0b0000001111100000) << 6;
                     pixel.b = (tmp.u & 0b0000000000011111) << 11;
-                    pixel.a = (alpha_bit & (tmp.u >> 15)) * 0xFFFF;
+                    pixel.a = (alpha_bit & (tmp.u >> 15)) * MaxU16;
                 }
 
                 break;
@@ -1377,7 +1410,7 @@ namespace Image
                     pixel.b = is.get() << 8;
                     pixel.g = is.get() << 8;
                     pixel.r = is.get() << 8;
-                    pixel.a = 0xFFFF;
+                    pixel.a = MaxU16;
                 }
 
                 break;
