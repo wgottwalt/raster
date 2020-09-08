@@ -599,8 +599,7 @@ namespace Image
                     break;
 
                 case IT::TruecolorRLE:
-                    // XXX: implement the actual pixel loader method
-                    throw "not implemented yet";
+                    pixels = loadTruecolorRleData(ifile, header);
                     break;
 
                 case IT::MonoRLE:
@@ -1567,6 +1566,126 @@ namespace Image
                     pixels.push_back(colormap[tmp.u]);
                 }
             }
+        }
+
+        return pixels;
+    }
+
+    Targa::Pixels Targa::loadTruecolorRleData(std::istream &is, const Header header) const
+    {
+        const size_t size = header.width * header.height;
+        Pixels pixels;
+        RGBA pixel;
+        size_t count = 0;
+        E::Union8 rle;
+
+        switch (header.depth)
+        {
+            case 15:
+            case 16:
+            {
+                const bool alpha_bit = header.image_descriptor & 0x01;
+                E::Union16 tmp_color;
+
+                while ((pixels.size() < size) && !is.eof())
+                {
+                    is.get(rle.c1);
+                    count = (rle.u & 128) ? ((rle.u & ~128) + 1) : (rle.u + 1);
+
+                    if (rle.u & 128)
+                    {
+                        is.get(tmp_color.c1).get(tmp_color.c2);
+                        pixel.r = (tmp_color.u & 0b0111110000000000) << 1;
+                        pixel.g = (tmp_color.u & 0b0000001111100000) << 6;
+                        pixel.b = (tmp_color.u & 0b0000000000011111) << 11;
+                        pixel.a = (alpha_bit & (tmp_color.u >> 15)) * MaxU16;
+                        for (size_t i = 0; i < count; ++i)
+                            pixels.push_back(pixel);
+                    }
+                    else
+                    {
+                        for (size_t i = 0; i < count; ++i)
+                        {
+                            is.get(tmp_color.c1).get(tmp_color.c2);
+                            pixel.r = (tmp_color.u & 0b0111110000000000) << 1;
+                            pixel.g = (tmp_color.u & 0b0000001111100000) << 6;
+                            pixel.b = (tmp_color.u & 0b0000000000011111) << 11;
+                            pixel.a = (alpha_bit & (tmp_color.u >> 15)) * MaxU16;
+                            pixels.push_back(pixel);
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            case 24:
+            {
+                while ((pixels.size() < size) && !is.eof())
+                {
+                    is.get(rle.c1);
+                    count = (rle.u & 128) ? ((rle.u & ~128) + 1) : (rle.u + 1);
+
+                    if (rle.u & 128)
+                    {
+                        pixel.b = is.get() << 8;
+                        pixel.g = is.get() << 8;
+                        pixel.r = is.get() << 8;
+                        pixel.a = MaxU16;
+                        for (size_t i = 0; i < count; ++i)
+                            pixels.push_back(pixel);
+                    }
+                    else
+                    {
+                        for (size_t i = 0; i < count; ++i)
+                        {
+                            pixel.b = is.get() << 8;
+                            pixel.g = is.get() << 8;
+                            pixel.r = is.get() << 8;
+                            pixel.a = MaxU16;
+                            pixels.push_back(pixel);
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            case 32:
+            {
+                while ((pixels.size() < size) && !is.eof())
+                {
+                    is.get(rle.c1);
+                    count = (rle.u & 128) ? ((rle.u & ~128) + 1) : (rle.u + 1);
+
+                    if (rle.u & 128)
+                    {
+                        pixel.b = is.get() << 8;
+                        pixel.g = is.get() << 8;
+                        pixel.r = is.get() << 8;
+                        pixel.a = is.get() << 8;
+                        for (size_t i = 0; i < count; ++i)
+                            pixels.push_back(pixel);
+                    }
+                    else
+                    {
+                        for (size_t i = 0; i < count; ++i)
+                        {
+                            pixel.b = is.get() << 8;
+                            pixel.g = is.get() << 8;
+                            pixel.r = is.get() << 8;
+                            pixel.a = is.get() << 8;
+                            pixels.push_back(pixel);
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            default:
+                throw std::logic_error("out of spec truecolor depth (" +
+                                       std::to_string(header.depth) + ")");
         }
 
         return pixels;
