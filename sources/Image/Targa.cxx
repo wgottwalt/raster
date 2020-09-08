@@ -577,8 +577,7 @@ namespace Image
                     break;
 
                 case IT::MappedRLE:
-                    // XXX: implement the actual pixel loader method
-                    throw "not implemented yet";
+                    pixels = loadMappedRleData(ifile, header);
                     break;
 
                 case IT::TruecolorRLE:
@@ -1314,6 +1313,9 @@ namespace Image
         Pixels pixels(header.width * header.height);
         E::Union8 tmp;
 
+        if (header.colormap_offset)
+            is.seekg(header.colormap_offset, std::ios::cur);
+
         switch (header.colormap_entry_size)
         {
             case 15:
@@ -1324,14 +1326,10 @@ namespace Image
 
                 for (size_t i = 0; i < mapsize; ++i)
                 {
-                    // XXX: 16bit color data looks weird, needs a check on a big endian machine
                     is.get(tmp_color.c1).get(tmp_color.c2);
                     colormap[i].r = (tmp_color.u & 0b0111110000000000) << 1;
                     colormap[i].g = (tmp_color.u & 0b0000001111100000) << 6;
                     colormap[i].b = (tmp_color.u & 0b0000000000011111) << 11;
-                    // maybe useless, feh, gimp and even imagemagick do not check for this bit, so
-                    // alpha channel support in 16bit mapped colors is ignored, but the spec says it
-                    // is possible and supported
                     colormap[i].a = (alpha_bit & (tmp_color.u >> 15)) ? MaxU16 : 0;
                 }
 
@@ -1447,6 +1445,94 @@ namespace Image
             is.read(&tmp.c1, sizeof (tmp.c1));
             pixel = {tmp.u, tmp.u, tmp.u, 255};
             pixel = pixel << 8;
+        }
+
+        return pixels;
+    }
+
+    Targa::Pixels Targa::loadMappedRleData(std::istream &is, const Header header) const
+    {
+        const size_t size = header.width * header.height;
+        const size_t mapsize = header.colormap_length;
+        Pixels colormap(mapsize, RGBA::Black);
+        Pixels pixels;
+        size_t count = 0;
+        E::Union8 rle;
+        E::Union8 tmp;
+
+        if (header.colormap_offset)
+            is.seekg(header.colormap_offset, std::ios::cur);
+
+        switch (header.colormap_entry_size)
+        {
+            case 15:
+            case 16:
+            {
+                const bool alpha_bit = header.image_descriptor & 0x01;
+                E::Union16 tmp_color;
+
+                for (size_t i = 0; i < mapsize; ++i)
+                {
+                    is.get(tmp_color.c1).get(tmp_color.c2);
+                    colormap[i].r = (tmp_color.u & 0b0111110000000000) << 1;
+                    colormap[i].g = (tmp_color.u & 0b0000001111100000) << 6;
+                    colormap[i].b = (tmp_color.u & 0b0000000000011111) << 11;
+                    colormap[i].a = (alpha_bit & (tmp_color.u >> 15)) ? MaxU16 : 0;
+                }
+
+                break;
+            }
+
+            case 24:
+            {
+                for (size_t i = 0; i < mapsize; ++i)
+                {
+                    colormap[i].b = is.get() << 8;
+                    colormap[i].g = is.get() << 8;
+                    colormap[i].r = is.get() << 8;
+                    colormap[i].a = MaxU16;
+                }
+
+                break;
+            }
+
+            case 32:
+            {
+                for (size_t i = 0; i < mapsize; ++i)
+                {
+                    colormap[i].b = is.get() << 8;
+                    colormap[i].g = is.get() << 8;
+                    colormap[i].r = is.get() << 8;
+                    colormap[i].a = is.get() << 8;
+                }
+
+                break;
+            }
+
+            default:
+                throw std::logic_error("out of spec mapped colors depth (" +
+                                       std::to_string(header.depth) + ")");
+        }
+
+        while ((pixels.size() < size) && !is.eof())
+        {
+            is.get(rle.c1);
+            count = (rle.u & 128) ? ((rle.u & ~128) + 1) : (rle.u + 1);
+
+            if (rle.u & 128)
+            {
+                is.get(tmp.c1);
+                for (size_t i = 0; i < count; ++i)
+                    pixels.push_back(colormap[tmp.u]);
+            }
+            else
+            {
+                for (size_t i = 0; i < count; ++i)
+                {
+                    is.get(tmp.c1);
+                    pixels.push_back(colormap[tmp.u]);
+                }
+            }
         }
 
         return pixels;

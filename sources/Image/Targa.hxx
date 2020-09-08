@@ -115,6 +115,7 @@ namespace Image
         Pixels loadMappedData(std::istream &is, const Header header) const;
         Pixels loadTruecolorData(std::istream &is, const Header header) const;
         Pixels loadMonoData(std::istream &is, const Header header) const;
+        Pixels loadMappedRleData(std::istream &is, const Header header) const;
         Pixels loadMonoRleData(std::istream &is, const Header header) const;
 
     private:
