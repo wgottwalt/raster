@@ -58,8 +58,8 @@ namespace Color
         RGBA16161616 &operator=(RGBA16161616 &&rhs) noexcept;
         bool operator==(const RGBA16161616 &rhs) const noexcept;
         bool operator!=(const RGBA16161616 &rhs) const noexcept;
-        RGBA16161616 operator>>(const uint16_t val) const noexcept;
-        RGBA16161616 operator<<(const uint16_t val) const noexcept;
+        RGBA16161616 operator>>(const uint8_t val) const noexcept;
+        RGBA16161616 operator<<(const uint8_t val) const noexcept;
 
         //--- public methods ---
         RGBA16161616 &set(const uint64_t val) noexcept;

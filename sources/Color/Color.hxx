@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RGBA8888.hxx"
 #include "RGBA16161616.hxx"
 #include "ColorDetail.hxx"
 #include "Quantize.hxx"

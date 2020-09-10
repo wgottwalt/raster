@@ -69,7 +69,7 @@ namespace Color
 
     RGBA16161616 &RGBA16161616::operator=(const RGBA16161616 &rhs) noexcept
     {
-        value = rhs.value; // moving a 64 bit value is less expansive than a branch
+        value = rhs.value;
 
         return *this;
     }
@@ -91,13 +91,13 @@ namespace Color
         return value != rhs.value;
     }
 
-    RGBA16161616 RGBA16161616::operator>>(const uint16_t val) const noexcept
+    RGBA16161616 RGBA16161616::operator>>(const uint8_t val) const noexcept
     {
         return {static_cast<uint16_t>(r >> val), static_cast<uint16_t>(g >> val),
                 static_cast<uint16_t>(b >> val), static_cast<uint16_t>(a >> val)};
     }
 
-    RGBA16161616 RGBA16161616::operator<<(const uint16_t val) const noexcept
+    RGBA16161616 RGBA16161616::operator<<(const uint8_t val) const noexcept
     {
         return {static_cast<uint16_t>(r << val), static_cast<uint16_t>(g << val),
                 static_cast<uint16_t>(b << val), static_cast<uint16_t>(a << val)};
