@@ -1,6 +1,8 @@
+#include <iostream>
 #include <fstream>
 #include <map>
 #include <stdexcept>
+#include "Color/Dithering.hxx"
 #include "Common/Endian.hxx"
 #include "Common/Tools.hxx"
 #include "Targa.hxx"
@@ -266,8 +268,6 @@ namespace Image
 
     bool Targa::setDepth(const uint8_t val)
     {
-        // first set the ImageType, then set depth (everything else would raise the complexity to
-        // nuts levels)
         if (!T::includes(val, 15, 16, 24, 32))
             return false;
 
@@ -486,10 +486,6 @@ namespace Image
                             tmp.u |= (pixel.gh >> 3) << 5;
                             tmp.u |= (pixel.bh >> 3);
                             tmp.u |= (alpha_bit && static_cast<bool>(pixel.a)) << 15;
-                            //tmp.r = pixel.rh >> 3;
-                            //tmp.g = pixel.gh >> 3;
-                            //tmp.b = pixel.bh >> 3;
-                            //tmp.a = alpha_bit && static_cast<bool>(pixel.a);
                             palette_data += tmp.c2;
                             palette_data += tmp.c1;
                         }
@@ -761,18 +757,22 @@ namespace Image
 
     std::string Targa::genMonoData(const Pixels &pixels) const
     {
+        const Pixels palette{{0, 0, 0, MaxU16}, {MaxU16, MaxU16, MaxU16, MaxU16}};
         std::string data;
 
         data.reserve(pixels.size());
         if (_greyscale)
         {
-            for (const auto &pixel : pixels)
-                data += pixel.grey() >> 8;
+            for (size_t i = 0; i < pixels.size(); ++i)
+                data += pixels[i].grey() >> 8;
         }
         else
         {
-            for (const auto &pixel : pixels)
-                data += (pixel.grey() > 0x7FFF) ? 0xFF : 0x0;
+            auto tpxls = Color::Dithering::apply(pixels, {RGBA::Black, RGBA::White}, width(),
+                                                 height(), Color::Dithering::Algorithm::Burkes);
+
+            for (size_t i = 0; i < pixels.size(); ++i)
+                data += (tpxls[i].grey() > (MaxU16 >> 1)) ? MaxU16 : 0;
         }
 
         return data;
@@ -1176,90 +1176,11 @@ namespace Image
         }
         else
         {
-            const size_t w = width();
-            const size_t h = height();
-            std::vector<uint16_t> tpxls(size, 0);
+            auto tpxls = Color::Dithering::apply(pixels, {RGBA::Black, RGBA::White}, width(),
+                                                 height(), Color::Dithering::Algorithm::Burkes);
 
             for (size_t i = 0; i < size; ++i)
-                tpxls[i] = pixels[i].grey();
-
-            for (size_t y = 0; y < h; ++y)
-            {
-                for (size_t x = 0; x < w; ++x)
-                {
-                    const int32_t orgp = tpxls[y * w + x];
-                    const int32_t newp = (tpxls[y * w + x] > 0x7FFF) ? MaxU16 : 0;
-                    const int32_t err = orgp - newp;
-
-                    tpxls[y * w + x] = newp;
-                    // burkes algorithm
-                    if (x < (w - 1))
-                    {
-                        auto &p = tpxls[y * w + x + 1];
-                        p = T::clamp(static_cast<int32_t>(p) + ((err << 3) >> 5), 0, MaxU16);
-                    }
-                    if (x < (w - 2))
-                    {
-                        auto &p = tpxls[y * w + x + 2];
-                        p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
-                    }
-                    if (y < (h - 1))
-                    {
-                        const size_t pos = (y + 1) * w + x;
-                        auto &tp = tpxls[pos];
-
-                        if (x > 1)
-                        {
-                            auto &p = tpxls[pos - 2];
-                            p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, MaxU16);
-                        }
-                        if (x > 1)
-                        {
-                            auto &p = tpxls[pos - 1];
-                            p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
-                        }
-                        tp = T::clamp(static_cast<int32_t>(tp) + ((err << 3) >> 5), 0, MaxU16);
-                        if (x < (w - 1))
-                        {
-                            auto &p = tpxls[pos + 1];
-                            p = T::clamp(static_cast<int32_t>(p) + ((err << 2) >> 5), 0, MaxU16);
-                        }
-                        if (x < (w - 2))
-                        {
-                            auto &p = tpxls[pos + 2];
-                            p = T::clamp(static_cast<int32_t>(p) + ((err << 1) >> 5), 0, MaxU16);
-                        }
-                    }
-#if 0
-                    // floyd steinberg algorithm
-                    if (x < (w - 1))
-                    {
-                        auto &p = tpxls[y * w + x + 1];
-                        p = T::clamp(static_cast<int32_t>(p) + err * 7 / 16, 0, MaxU16);
-                    }
-                    if (y < (h - 1))
-                    {
-                        const size_t pos = (y + 1) * w + x;
-                        auto &tp = tpxls[pos];
-
-                        if (x > 0)
-                        {
-                            auto &p = tpxls[pos - 1];
-                            p = T::clamp(static_cast<int32_t>(p) + err * 3 / 16, 0, MaxU16);
-                        }
-                        tp = T::clamp(static_cast<int32_t>(tp) + err * 5 / 16, 0, MaxU16);
-                        if (x < (w - 1))
-                        {
-                            auto &p = tpxls[pos + 1];
-                            p = T::clamp(static_cast<int32_t>(p) + err / 16, 0, MaxU16);
-                        }
-                    }
-#endif
-                }
-            }
-
-            for (size_t i = 0; i < size; ++i)
-                tmp[i] = tpxls[i] >> 8;
+                tmp[i] = (tpxls[i].grey() > (MaxU16 >> 1)) ? MaxU16 : 0;
         }
 
         if (_version2)
