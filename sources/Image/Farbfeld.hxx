@@ -11,8 +11,10 @@ namespace Image
     class Farbfeld : public Base {
     public:
         //--- public types and constants ---
-        static const int64_t MaxWidth = std::numeric_limits<uint32_t>::max();
-        static const int64_t MaxHeight = MaxWidth;
+        static constexpr int64_t MinWidth = 0;
+        static constexpr int64_t MinHeight = 0;
+        static constexpr int64_t MaxWidth = std::numeric_limits<uint32_t>::max();
+        static constexpr int64_t MaxHeight = MaxWidth;
 
         //--- public constructors ---
         Farbfeld();

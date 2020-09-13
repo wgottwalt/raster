@@ -25,13 +25,17 @@ namespace Image
     }
 
     Farbfeld::Farbfeld(const int64_t width, const int64_t height, const RGBA color)
-    : Base(width, height, color)
+    : Base(T::inRange(width, MinWidth, MaxWidth) ? width : 0,
+           T::inRange(height, MinHeight, MaxHeight) ? height : 0, color)
     {
     }
 
     Farbfeld::Farbfeld(const Pixels &pixels, const int64_t width, const int64_t height)
-    : Base(pixels, width, height)
+    : Base()
     {
+        if ((static_cast<uint64_t>(width * height) == static_cast<uint64_t>(pixels.size())) &&
+          T::inRange(width, MinWidth, MaxWidth) && T::inRange(height, MinHeight, MaxHeight))
+            implReplace(pixels, width, height);
     }
 
     Farbfeld::Farbfeld(const Farbfeld &rhs)
@@ -80,13 +84,14 @@ namespace Image
 
     bool Farbfeld::valid() const
     {
-        return T::inRange(width(), 0, MaxWidth) && T::inRange(height(), 0, MaxHeight) &&
-               (pixels().size() == static_cast<size_t>(width() * height()));
+        return T::inRange(width(), MinWidth, MaxWidth) &&
+               T::inRange(height(), MinHeight, MaxHeight) &&
+               (static_cast<uint64_t>(pixels().size()) == static_cast<uint64_t>(width() * height()));
     }
 
     bool Farbfeld::resize(const int64_t width, const int64_t height, const Scaler scaler)
     {
-        if (T::inRange(width, 4, MaxWidth) && T::inRange(height, 4, MaxHeight))
+        if ((width <= MaxWidth) && (height <= MaxHeight))
             return implResize(width, height, scaler);
 
         return false;
@@ -106,8 +111,10 @@ namespace Image
             tmp.u = E::toBE(tmp.u);
             ofile.put(tmp.c1).put(tmp.c2).put(tmp.c3).put(tmp.c4);
             for (auto &pixel : pixels())
+            {
                 ofile.put(pixel.c1).put(pixel.c2).put(pixel.c3).put(pixel.c4).put(pixel.c5)
                      .put(pixel.c6).put(pixel.c7).put(pixel.c8);
+            }
             ofile.close();
 
             return true;
@@ -118,9 +125,9 @@ namespace Image
 
     bool Farbfeld::load(const std::string &filename)
     {
-        if (std::ifstream ifile(filename); valid() && ifile.is_open() && ifile.good())
+        if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
-            const size_t size = ifile.seekg(0, std::ios::end).tellg();
+            const uint64_t size = ifile.seekg(0, std::ios::end).tellg();
             std::string id(8, '\0');
             Pixels pixels;
             E::Union32 width;
@@ -152,8 +159,10 @@ namespace Image
 
             pixels.resize(width.u * height.u, RGBA::Black);
             for (auto &pixel : pixels)
+            {
                 ifile.get(pixel.c1).get(pixel.c2).get(pixel.c3).get(pixel.c4).get(pixel.c5)
                      .get(pixel.c6).get(pixel.c7).get(pixel.c8);
+            }
             ifile.close();
 
             implReplace(pixels, width.u, height.u);
@@ -170,7 +179,7 @@ namespace Image
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
-            const size_t size = ifile.seekg(0, std::ios::end).tellg();
+            const uint64_t size = ifile.seekg(0, std::ios::end).tellg();
             std::string id(8, '\0');
 
             if ((size < 16) || (size % 8))
