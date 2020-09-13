@@ -24,13 +24,17 @@ namespace Image
     }
 
     Simple01::Simple01(const int64_t width, const int64_t height, const RGBA color)
-    : Base(width, height, color)
+    : Base(T::inRange(width, MinWidth, MaxWidth) ? width : 1,
+           T::inRange(height, MinHeight, MaxHeight) ? height : 1, color)
     {
     }
 
     Simple01::Simple01(const Pixels &pixels, const int64_t width, const int64_t height)
-    : Base(pixels, width, height)
+    : Base()
     {
+        if ((static_cast<uint64_t>(width * height) == static_cast<uint64_t>(pixels.size())) &&
+          T::inRange(width, MinWidth, MaxWidth) && T::inRange(height, MinHeight, MaxHeight))
+            implReplace(pixels, width, height);
     }
 
     Simple01::Simple01(const Simple01 &rhs)
@@ -79,8 +83,9 @@ namespace Image
 
     bool Simple01::valid() const
     {
-        return T::inRange(width(), 1, MaxWidth) && T::inRange(height(), 1, MaxHeight) &&
-               (pixels().size() == static_cast<size_t>(width() * height()));
+        return T::inRange(width(), MinWidth, MaxWidth) &&
+               T::inRange(height(), MinHeight, MaxHeight) &&
+               (static_cast<uint64_t>(pixels().size()) == static_cast<uint64_t>(width() * height()));
     }
 
     bool Simple01::resize(const int64_t width, const int64_t height, const Scaler scaler)
@@ -122,7 +127,7 @@ namespace Image
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
-            const size_t size = ifile.seekg(0, std::ios::end).tellg();
+            const uint64_t size = ifile.seekg(0, std::ios::end).tellg();
             std::string id(8, '\0');
             std::string buffer;
             Pixels pixels;
@@ -185,7 +190,7 @@ namespace Image
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
-            const size_t size = ifile.seekg(0, std::ios::end).tellg();
+            const uint64_t size = ifile.seekg(0, std::ios::end).tellg();
             std::string id(8, '\0');
             E::Union64 rle_size;
             E::Union32 width;
