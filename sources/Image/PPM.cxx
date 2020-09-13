@@ -23,8 +23,8 @@ namespace Image
     }
 
     PPM::PPM(const int64_t width, const int64_t height, const RGBA color)
-    : Base(T::inRange(width, 0, MaxWidth) ? width : 1,
-           T::inRange(height, 0, MaxHeight) ? height : 1, color),
+    : Base(T::inRange(width, MinWidth, MaxWidth) ? width : 1,
+           T::inRange(height, MinHeight, MaxHeight) ? height : 1, color),
       _comment(""), _wide(false), _binary(false)
     {
     }
@@ -32,13 +32,10 @@ namespace Image
     PPM::PPM(const Pixels &pixels, const int64_t width, const int64_t height)
     : Base(), _comment(""), _wide(false), _binary(false)
     {
-        const size_t size = width * height;
-
-        if ((size == pixels.size()) && T::inRange(width, 0, MaxWidth) &&
-          T::inRange(height, 0, MaxHeight))
+        if ((static_cast<uint64_t>(width * height) == static_cast<uint64_t>(pixels.size())) &&
+          T::inRange(width, MinWidth, MaxWidth) &&
+          T::inRange(height, MinHeight, MaxHeight))
             implReplace(pixels, width, height);
-        else
-            implReplace(Pixels(0, RGBA::Black), 0, 0);
     }
 
     PPM::PPM(const PPM &rhs)
@@ -133,7 +130,8 @@ namespace Image
     {
         // having no pixels, aka a width/height of 0 is considert invalid, but the PPM image format
         // supports it
-        return width() && height() && (pixels().size() == static_cast<size_t>(width() * height()));
+        return (width() * height() > 0) &&
+               (static_cast<uint64_t>(pixels().size())) == static_cast<uint64_t>(width() * height());
     }
 
     bool PPM::resize(const int64_t width, const int64_t height, const Scaler scaler)
@@ -174,20 +172,28 @@ namespace Image
             ofile << width() << ' ' << height() << '\n' << (_wide ? MaxWidth : 255) << '\n';
 
             if (!_wide && !_binary)
+            {
                 for (auto &pixel : pixels())
                     ofile << static_cast<uint16_t>(pixel.rh) << ' '
                           << static_cast<uint16_t>(pixel.gh) << ' '
                           << static_cast<uint16_t>(pixel.bh) << '\n';
+            }
             else if (!_wide && _binary)
+            {
                 for (auto &pixel : pixels())
                     ofile.put(pixel.c1).put(pixel.c3).put(pixel.c5);
+            }
             else if (_wide && !_binary)
+            {
                 for (auto &pixel : pixels())
                     ofile << pixel.r << ' ' << pixel.g << ' ' << pixel.b << '\n';
+            }
             else if (_wide && _binary)
+            {
                 for (auto &pixel : pixels())
                     ofile.put(pixel.c1).put(pixel.c2).put(pixel.c3).put(pixel.c4).put(pixel.c5)
                          .put(pixel.c6);
+            }
             ofile.close();
 
             return true;
@@ -234,8 +240,9 @@ namespace Image
             if (ifile.peek() == '\n')
                 ifile.get();
 
-            if (!T::inRange(width, 0, MaxWidth) || !T::inRange(height, 0, MaxHeight) ||
-              !T::inRange(colors, 1, MaxWidth))
+            if (!T::inRange(width, MinWidth, MaxWidth) ||
+              !T::inRange(height, MinHeight, MaxHeight) ||
+              !T::inRange(colors, MinWidth, MaxWidth))
             {
                 ifile.close();
                 return false;
@@ -267,9 +274,11 @@ namespace Image
                 }
             }
             else if (binary && (colors > 255))
+            {
                 for (auto &pixel : pixels)
                     ifile.get(pixel.c1).get(pixel.c2).get(pixel.c3).get(pixel.c4).get(pixel.c5)
                          .get(pixel.c6);
+            }
             ifile.close();
 
             implReplace(pixels, width, height);
@@ -289,13 +298,44 @@ namespace Image
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
+            std::string comment;
             std::string line;
+            int64_t width = 0;
+            int64_t height = 0;
+            int64_t colors = 0;
 
             std::getline(ifile, line);
+
+            if ((line.substr(0, 2) != "P3") && (line.substr(0, 2) != "P6"))
+            {
+                ifile.close();
+                return false;
+            }
+
+            while ((ifile.peek() == '#') && std::getline(ifile, line))
+                comment += T::trim(line.substr(1, std::string::npos)) + '\n';
+            ifile >> width;
+            while ((ifile.peek() == '#') && std::getline(ifile, line))
+                comment += T::trim(line.substr(1, std::string::npos)) + '\n';
+            ifile >> height;
+            while ((ifile.peek() == '#') && std::getline(ifile, line))
+                comment += T::trim(line.substr(1, std::string::npos)) + '\n';
+            ifile >> colors;
+
+            if (ifile.peek() == '\n')
+                ifile.get();
+
+            if (!T::inRange(width, MinWidth, MaxWidth) ||
+              !T::inRange(height, MinHeight, MaxHeight) ||
+              !T::inRange(colors, MinWidth, MaxWidth))
+            {
+                ifile.close();
+                return false;
+            }
+
             ifile.close();
 
-            if ((line.substr(0, 2) == "P3") || (line.substr(0, 2) == "P6"))
-                return true;
+            return true;
         }
 
         return false;
