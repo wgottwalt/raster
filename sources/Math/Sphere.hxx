@@ -88,7 +88,7 @@ namespace Math
             return false;
         }
 
-        virtual Sphere::Intersection intersect(const Ray<T> &ray) const override final
+        virtual Sphere::Intersection intersect(const Ray<T> &ray) override final
         {
             const Vector3<T> diff = Shape<T>::origin() - ray.origin();
 

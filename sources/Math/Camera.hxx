@@ -213,7 +213,7 @@ namespace Math
             return {{0, 0, 0}, {0, 0, 0}};
         }
 
-        virtual Camera::Intersection intersect(const Ray<T> &) const override final
+        virtual Camera::Intersection intersect(const Ray<T> &) override final
         {
             return {false, 0, nullptr};
         }
