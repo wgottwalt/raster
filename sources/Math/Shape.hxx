@@ -11,7 +11,7 @@ namespace Math
     class Shape {
     public:
         //--- public types and constants ---
-        using Intersection = std::tuple<bool,T,T>;
+        using Intersection = std::tuple<bool,T,const Shape *>;
         static constexpr T MinRange = 0;
         static constexpr T MaxRange = std::numeric_limits<T>::max();
 

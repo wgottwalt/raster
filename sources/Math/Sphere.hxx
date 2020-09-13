@@ -99,13 +99,14 @@ namespace Math
                 if (const T b = diff.dotProduct(diff) - (a * a); b <= r2)
                 {
                     const T c = std::sqrt(r2 - b);
+                    const T t0 = a - c;
+                    const T t1 = a + c;
 
-                    return {true, std::max(Shape<T>::MinRange, a - c),
-                            std::min(a + c, Shape<T>::MaxRange)};
+                    return {true, (t0 < 0) ? t1 : t0, this};
                 }
             }
 
-            return {false, 0, 0};
+            return {false, 0, nullptr};
         }
 
     private:

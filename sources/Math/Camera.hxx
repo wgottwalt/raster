@@ -215,7 +215,7 @@ namespace Math
 
         virtual Camera::Intersection intersect(const Ray<T> &) const override final
         {
-            return {false, 0, 0};
+            return {false, 0, nullptr};
         }
 
     protected:
