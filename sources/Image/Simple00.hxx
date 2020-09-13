@@ -20,10 +20,10 @@ namespace Image
     class Simple00 : public Base {
     public:
         //--- public types and constants ---
-        static const int64_t MinWidth = 1;
-        static const int64_t MinHeight = 1;
-        static const int64_t MaxWidth = std::numeric_limits<uint32_t>::max();
-        static const int64_t MaxHeight = std::numeric_limits<uint32_t>::max();
+        static constexpr int64_t MinWidth = 1;
+        static constexpr int64_t MinHeight = 1;
+        static constexpr int64_t MaxWidth = std::numeric_limits<uint32_t>::max();
+        static constexpr int64_t MaxHeight = std::numeric_limits<uint32_t>::max();
 
         //--- public constructors ---
         Simple00() noexcept;

@@ -25,13 +25,17 @@ namespace Image
     }
 
     Simple00::Simple00(const int64_t width, const int64_t height, const RGBA color)
-    : Base(width, height, color)
+    : Base(T::inRange(width, MinWidth, MaxWidth) ? width : 1,
+           T::inRange(height, MinHeight, MaxHeight) ? height : 1, color)
     {
     }
 
     Simple00::Simple00(const Pixels &pixels, const int64_t width, const int64_t height)
-    : Base(pixels, width, height)
+    : Base()
     {
+        if ((static_cast<uint64_t>(width * height)) == static_cast<uint64_t>(pixels.size()) &&
+          T::inRange(width, MinWidth, MaxWidth) && T::inRange(height, MinHeight, MaxHeight))
+            implReplace(pixels, width, height);
     }
 
     Simple00::Simple00(const Simple00 &rhs)
@@ -80,8 +84,9 @@ namespace Image
 
     bool Simple00::valid() const
     {
-        return T::inRange(width(), 1, MaxWidth) && T::inRange(height(), 1, MaxHeight) &&
-               (pixels().size() == static_cast<size_t>(width() * height()));
+        return T::inRange(width(), MinWidth, MaxWidth) &&
+               T::inRange(height(), MinHeight, MaxHeight) &&
+               (static_cast<uint64_t>(pixels().size()) == static_cast<uint64_t>(width() * height()));
     }
 
     bool Simple00::resize(const int64_t width, const int64_t height, const Scaler scaler)
@@ -106,8 +111,10 @@ namespace Image
             tmp.u = E::toBE(tmp.u);
             ofile.put(tmp.c1).put(tmp.c2).put(tmp.c3).put(tmp.c4);
             for (const auto &pixel : pixels())
+            {
                 ofile.put(pixel.c1).put(pixel.c2).put(pixel.c3).put(pixel.c4).put(pixel.c5)
                      .put(pixel.c6).put(pixel.c7).put(pixel.c8);
+            }
             ofile.close();
 
             return true;
@@ -120,7 +127,7 @@ namespace Image
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
-            const size_t size = ifile.seekg(0, std::ios::end).tellg();
+            const uint64_t size = ifile.seekg(0, std::ios::end).tellg();
             std::string id(8, '\0');
             Pixels pixels;
             E::Union32 width;
@@ -145,8 +152,8 @@ namespace Image
             ifile.get(height.c1).get(height.c2).get(height.c3).get(height.c4);
             width.u = E::fromBE(width.u);
             height.u = E::fromBE(height.u);
-            if ((width.u == 0) || (height.u == 0) || (static_cast<size_t>(width.u) *
-              static_cast<size_t>(height.u) * sizeof (RGBA)) != (size - 16))
+            if ((width.u == 0) || (height.u == 0) || (static_cast<uint64_t>(width.u) *
+              static_cast<uint64_t>(height.u) * static_cast<uint64_t>(sizeof (RGBA))) != (size - 16))
             {
                 ifile.close();
                 return false;
@@ -154,8 +161,10 @@ namespace Image
 
             pixels.resize(width.u * height.u, RGBA::Black);
             for (auto &pixel : pixels)
+            {
                 ifile.get(pixel.c1).get(pixel.c2).get(pixel.c3).get(pixel.c4).get(pixel.c5)
                      .get(pixel.c6).get(pixel.c7).get(pixel.c8);
+            }
             ifile.close();
 
             implReplace(pixels, width.u, height.u);
@@ -172,7 +181,7 @@ namespace Image
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
-            const size_t size = ifile.seekg(0, std::ios::end).tellg();
+            const uint64_t size = ifile.seekg(0, std::ios::end).tellg();
             std::string id(8, '\0');
 
             if ((size < 24) || (size % 8))
