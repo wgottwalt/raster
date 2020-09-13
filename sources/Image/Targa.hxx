@@ -22,10 +22,10 @@ namespace Image
     class Targa : public Base {
     public:
         //--- public types and constants ---
-        static const int64_t MinWidth = 0;
-        static const int64_t MinHeight = 0;
-        static const int64_t MaxWidth = std::numeric_limits<uint16_t>::max();
-        static const int64_t MaxHeight = MaxWidth;
+        static constexpr int64_t MinWidth = 0;
+        static constexpr int64_t MinHeight = 0;
+        static constexpr int64_t MaxWidth = std::numeric_limits<uint16_t>::max();
+        static constexpr int64_t MaxHeight = MaxWidth;
 
         enum class ImageType : uint8_t {
             NoData = 0,

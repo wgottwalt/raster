@@ -57,7 +57,7 @@ namespace Image
       _greyscale(false)
     {
         if (T::inRange(width, MinWidth, MaxWidth) && T::inRange(height, MinHeight, MaxHeight) &&
-          (pixels.size() == static_cast<size_t>(width * height)))
+          (static_cast<uint64_t>(pixels.size()) == static_cast<uint64_t>(width * height)))
             implReplace(pixels, width, height);
     }
 
@@ -337,7 +337,7 @@ namespace Image
 
     bool Targa::setXOrigin(const int64_t val)
     {
-        if (T::inRange(val, 0, MaxU16))
+        if (T::inRange(val, MinWidth, MaxWidth))
         {
             _x_origin = val;
             return true;
@@ -353,7 +353,7 @@ namespace Image
 
     bool Targa::setYOrigin(const int64_t val)
     {
-        if (T::inRange(val, 0, MaxU16))
+        if (T::inRange(val, MinHeight, MaxHeight))
         {
             _y_origin = val;
             return true;
@@ -374,10 +374,9 @@ namespace Image
 
     bool Targa::valid() const
     {
-        // XXX: this is just a minimalistic check, beef it up!
         return T::inRange(width(), MinWidth, MaxWidth) &&
                T::inRange(height(), MinHeight, MaxHeight) &&
-               (static_cast<size_t>(width() * height()) == pixels().size());
+               (static_cast<uint64_t>(width() * height()) == static_cast<uint64_t>(pixels().size()));
     }
 
     bool Targa::resize(const int64_t width, const int64_t height, const Scaler scaler)
@@ -426,9 +425,9 @@ namespace Image
                     data = genMonoRleData(pixels());
                     break;
 
+                // this one shouldn't happen anyway, it can't be set
                 case IT::MappedAll:
                 case IT::MappedAllQuad:
-                    // this one shouldn't happen anyway, it can't be set
                     throw std::logic_error("propreitary image type not supported");
             }
 
@@ -542,7 +541,7 @@ namespace Image
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
-            const size_t size = ifile.seekg(0, std::ios::end).tellg();
+            const uint64_t size = ifile.seekg(0, std::ios::end).tellg();
             Pixels pixels;
             std::string id;
             std::string palette;
@@ -574,8 +573,8 @@ namespace Image
 
             switch (header.image_type)
             {
+                // nothing to do here
                 case IT::NoData:
-                    // nothing to do here
                     break;
 
                 case IT::Mapped:
@@ -657,20 +656,20 @@ namespace Image
     {
         // max palette size is 8192 bytes, so it could be 2048 32bit colors or 4096 15/16bit colors
         // but I never came across a Targa with more the 256 mapped colors
-        const size_t MaxColor = 256;
+        const uint64_t MaxColor = 256;
         Pixels out;
         std::string data;
 
         if (Q::middleCut(width(), height(), MaxColor, pixels, out, palette))
         {
-            std::map<uint64_t, size_t> mapping;
+            std::map<uint64_t,uint64_t> mapping;
 
             if (pixels.size() != out.size())
                 return data;
             if (palette.size() != MaxColor)
                 return data;
 
-            for (size_t i = 0; i < palette.size(); ++i)
+            for (uint64_t i = 0; i < palette.size(); ++i)
                 mapping[palette[i].value] = i;
 
             data.reserve(out.size());
@@ -763,7 +762,7 @@ namespace Image
         data.reserve(pixels.size());
         if (_greyscale)
         {
-            for (size_t i = 0; i < pixels.size(); ++i)
+            for (uint64_t i = 0; i < pixels.size(); ++i)
                 data += pixels[i].grey() >> 8;
         }
         else
@@ -771,7 +770,7 @@ namespace Image
             auto tpxls = Color::Dithering::apply(pixels, {RGBA::Black, RGBA::White}, width(),
                                                  height(), Color::Dithering::Algorithm::Burkes);
 
-            for (size_t i = 0; i < pixels.size(); ++i)
+            for (uint64_t i = 0; i < pixels.size(); ++i)
                 data += (tpxls[i].grey() > (MaxU16 >> 1)) ? MaxU16 : 0;
         }
 
@@ -780,14 +779,14 @@ namespace Image
 
     std::string Targa::genMappedRleData(Pixels &palette, const Pixels &pixels) const
     {
-        const size_t MaxColors = 256;
+        const uint64_t MaxColors = 256;
         Pixels out;
         std::string data;
 
         if (Color::Quantize::middleCut(width(), height(), MaxColors, pixels, out, palette))
         {
-            const size_t size = out.size();
-            std::map<uint64_t, size_t> mapping;
+            const uint64_t size = out.size();
+            std::map<uint64_t,uint64_t> mapping;
             std::string tmp(size, '\0');
             std::vector<uint8_t> buffer;
             size_t count = 0;
@@ -797,20 +796,20 @@ namespace Image
             if (palette.size() != MaxColors)
                 return data;
 
-            for (size_t i = 0; i < palette.size(); ++i)
+            for (uint64_t i = 0; i < palette.size(); ++i)
                 mapping[palette[i].value] = i;
-            for (size_t i = 0; i < out.size(); ++i)
+            for (uint64_t i = 0; i < out.size(); ++i)
                 tmp[i] = static_cast<char>(mapping[out[i].value]);
 
             if (_version2)
             {
                 for (int64_t l = 0; l < height(); ++l)
                 {
-                    const size_t lsize = width();
-                    const size_t ppos = l * lsize;
+                    const uint64_t lsize = width();
+                    const uint64_t ppos = l * lsize;
                     const std::string pline(tmp.begin() + ppos, tmp.begin() + ppos + lsize);
 
-                    for (size_t i = 0; i < lsize; ++i)
+                    for (uint64_t i = 0; i < lsize; ++i)
                     {
                         count = 1;
                         while ((i < (lsize - 1)) && (count < 128) && (pline[i] == pline[i + 1]))
@@ -844,7 +843,7 @@ namespace Image
             }
             else
             {
-                for (size_t i = 0; i < size; ++i)
+                for (uint64_t i = 0; i < size; ++i)
                 {
                     count = 1;
                     while ((i < (size - 1)) && (count < 128) && (tmp[i] == tmp[i + 1]))
@@ -881,11 +880,11 @@ namespace Image
 
     std::string Targa::genTruecolorRleData(const Pixels &pixels) const
     {
-        const size_t size = pixels.size();
-        const size_t psize = (_depth + 1) / 8;
+        const uint64_t size = pixels.size();
+        const uint64_t psize = (_depth + 1) / 8;
         std::vector<uint8_t> buffer;
         std::string data;
-        size_t count = 0;
+        uint64_t count = 0;
 
         switch (_depth)
         {
@@ -911,11 +910,11 @@ namespace Image
                 {
                     for (int64_t l = 0; l < height(); ++l)
                     {
-                        const size_t lsize = width();
-                        const size_t ppos = l * lsize;
+                        const uint64_t lsize = width();
+                        const uint64_t ppos = l * lsize;
                         const Pixels pline(pixels.begin() + ppos, pixels.begin() + ppos + lsize);
 
-                        for (size_t i = 0; i < lsize; ++i)
+                        for (uint64_t i = 0; i < lsize; ++i)
                         {
                             count = 1;
                             while ((i < (lsize - 1)) && (count < 128) && (pline[i] == pline[i + 1]))
@@ -949,7 +948,7 @@ namespace Image
                 }
                 else
                 {
-                    for (size_t i = 0; i < size; ++i)
+                    for (uint64_t i = 0; i < size; ++i)
                     {
                         count = 1;
                         while ((i < (size - 1)) && (count < 128) && (pixels[i] == pixels[i + 1]))
@@ -995,13 +994,13 @@ namespace Image
 
                 if (_version2)
                 {
-                    for (int64_t l = 0; l < height(); ++l)
+                    for (uint64_t l = 0; l < static_cast<uint64_t>(height()); ++l)
                     {
-                        const size_t lsize = width();
-                        const size_t ppos = l * lsize;
+                        const uint64_t lsize = width();
+                        const uint64_t ppos = l * lsize;
                         const Pixels pline(pixels.begin() + ppos, pixels.begin() + ppos + lsize);
 
-                        for (size_t i = 0; i < lsize; ++i)
+                        for (uint64_t i = 0; i < lsize; ++i)
                         {
                             count = 1;
                             while ((i < (lsize - 1)) && (count < 128) && (pline[i] == pline[i + 1]))
@@ -1035,7 +1034,7 @@ namespace Image
                 }
                 else
                 {
-                    for (size_t i = 0; i < size; ++i)
+                    for (uint64_t i = 0; i < size; ++i)
                     {
                         count = 1;
                         while ((i < (size - 1)) && (count < 128) && (pixels[i] == pixels[i + 1]))
@@ -1082,13 +1081,13 @@ namespace Image
 
                 if (_version2)
                 {
-                    for (int64_t l = 0; l < height(); ++l)
+                    for (uint64_t l = 0; l < static_cast<uint64_t>(height()); ++l)
                     {
-                        const size_t lsize = width();
-                        const size_t ppos = l * lsize;
+                        const uint64_t lsize = width();
+                        const uint64_t ppos = l * lsize;
                         const Pixels pline(pixels.begin() + ppos, pixels.begin() + ppos + lsize);
 
-                        for (size_t i = 0; i < lsize; ++i)
+                        for (uint64_t i = 0; i < lsize; ++i)
                         {
                             count = 1;
                             while ((i < (lsize - 1)) && (count < 128) && (pline[i] == pline[i + 1]))
@@ -1122,7 +1121,7 @@ namespace Image
                 }
                 else
                 {
-                    for (size_t i = 0; i < size; ++i)
+                    for (uint64_t i = 0; i < size; ++i)
                     {
                         count = 1;
                         while ((i < (size - 1)) && (count < 128) && (pixels[i] == pixels[i + 1]))
@@ -1163,15 +1162,15 @@ namespace Image
 
     std::string Targa::genMonoRleData(const Pixels &pixels) const
     {
-        const size_t size = pixels.size();
+        const uint64_t size = pixels.size();
         std::vector<uint8_t> buffer;
         std::string tmp(size, '\0');
         std::string data;
-        size_t count = 0;
+        uint64_t count = 0;
 
         if (_greyscale)
         {
-            for (size_t i = 0; i < size; ++i)
+            for (uint64_t i = 0; i < size; ++i)
                 tmp[i] = pixels[i].grey() >> 8;
         }
         else
@@ -1179,19 +1178,19 @@ namespace Image
             auto tpxls = Color::Dithering::apply(pixels, {RGBA::Black, RGBA::White}, width(),
                                                  height(), Color::Dithering::Algorithm::Burkes);
 
-            for (size_t i = 0; i < size; ++i)
+            for (uint64_t i = 0; i < size; ++i)
                 tmp[i] = (tpxls[i].grey() > (MaxU16 >> 1)) ? MaxU16 : 0;
         }
 
         if (_version2)
         {
-            for (int64_t l = 0; l < height(); ++l)
+            for (uint64_t l = 0; l < static_cast<uint64_t>(height()); ++l)
             {
-                const size_t lsize = width();
-                const size_t ppos = l * lsize;
+                const uint64_t lsize = width();
+                const uint64_t ppos = l * lsize;
                 const std::string pline(tmp.begin() + ppos, tmp.begin() + ppos + lsize);
 
-                for (size_t i = 0; i < lsize; ++i)
+                for (uint64_t i = 0; i < lsize; ++i)
                 {
                     count = 1;
                     while ((i < (lsize - 1)) && (count < 128) && (pline[i] == pline[i + 1]))
@@ -1225,7 +1224,7 @@ namespace Image
         }
         else
         {
-            for (size_t i = 0; i < size; ++i)
+            for (uint64_t i = 0; i < size; ++i)
             {
                 count = 1;
                 while ((i < (size - 1)) && (count < 128) && (tmp[i] == tmp[i + 1]))
@@ -1262,7 +1261,7 @@ namespace Image
 
     Targa::Pixels Targa::loadMappedData(std::istream &is, const Header header) const
     {
-        const size_t mapsize = header.colormap_length;
+        const uint64_t mapsize = header.colormap_length;
         Pixels colormap(mapsize, RGBA::Black);
         Pixels pixels(header.width * header.height);
         E::Union8 tmp;
@@ -1278,7 +1277,7 @@ namespace Image
                 const bool alpha_bit = header.image_descriptor & 0x01;
                 E::Union16 tmp_color;
 
-                for (size_t i = 0; i < mapsize; ++i)
+                for (uint64_t i = 0; i < mapsize; ++i)
                 {
                     is.get(tmp_color.c1).get(tmp_color.c2);
                     colormap[i].r = (tmp_color.u & 0b0111110000000000) << 1;
@@ -1292,7 +1291,7 @@ namespace Image
 
             case 24:
             {
-                for (size_t i = 0; i < mapsize; ++i)
+                for (uint64_t i = 0; i < mapsize; ++i)
                 {
                     colormap[i].b = is.get() << 8;
                     colormap[i].g = is.get() << 8;
@@ -1305,7 +1304,7 @@ namespace Image
 
             case 32:
             {
-                for (size_t i = 0; i < mapsize; ++i)
+                for (uint64_t i = 0; i < mapsize; ++i)
                 {
                     colormap[i].b = is.get() << 8;
                     colormap[i].g = is.get() << 8;
@@ -1406,11 +1405,11 @@ namespace Image
 
     Targa::Pixels Targa::loadMappedRleData(std::istream &is, const Header header) const
     {
-        const size_t size = header.width * header.height;
-        const size_t mapsize = header.colormap_length;
+        const uint64_t size = header.width * header.height;
+        const uint64_t mapsize = header.colormap_length;
         Pixels colormap(mapsize, RGBA::Black);
         Pixels pixels;
-        size_t count = 0;
+        uint64_t count = 0;
         E::Union8 rle;
         E::Union8 tmp;
 
@@ -1425,7 +1424,7 @@ namespace Image
                 const bool alpha_bit = header.image_descriptor & 0x01;
                 E::Union16 tmp_color;
 
-                for (size_t i = 0; i < mapsize; ++i)
+                for (uint64_t i = 0; i < mapsize; ++i)
                 {
                     is.get(tmp_color.c1).get(tmp_color.c2);
                     colormap[i].r = (tmp_color.u & 0b0111110000000000) << 1;
@@ -1439,7 +1438,7 @@ namespace Image
 
             case 24:
             {
-                for (size_t i = 0; i < mapsize; ++i)
+                for (uint64_t i = 0; i < mapsize; ++i)
                 {
                     colormap[i].b = is.get() << 8;
                     colormap[i].g = is.get() << 8;
@@ -1452,7 +1451,7 @@ namespace Image
 
             case 32:
             {
-                for (size_t i = 0; i < mapsize; ++i)
+                for (uint64_t i = 0; i < mapsize; ++i)
                 {
                     colormap[i].b = is.get() << 8;
                     colormap[i].g = is.get() << 8;
@@ -1476,12 +1475,12 @@ namespace Image
             if (rle.u & 128)
             {
                 is.get(tmp.c1);
-                for (size_t i = 0; i < count; ++i)
+                for (uint64_t i = 0; i < count; ++i)
                     pixels.push_back(colormap[tmp.u]);
             }
             else
             {
-                for (size_t i = 0; i < count; ++i)
+                for (uint64_t i = 0; i < count; ++i)
                 {
                     is.get(tmp.c1);
                     pixels.push_back(colormap[tmp.u]);
@@ -1494,10 +1493,10 @@ namespace Image
 
     Targa::Pixels Targa::loadTruecolorRleData(std::istream &is, const Header header) const
     {
-        const size_t size = header.width * header.height;
+        const uint64_t size = header.width * header.height;
         Pixels pixels;
         RGBA pixel;
-        size_t count = 0;
+        uint64_t count = 0;
         E::Union8 rle;
 
         switch (header.depth)
@@ -1520,12 +1519,12 @@ namespace Image
                         pixel.g = (tmp_color.u & 0b0000001111100000) << 6;
                         pixel.b = (tmp_color.u & 0b0000000000011111) << 11;
                         pixel.a = (alpha_bit & (tmp_color.u >> 15)) * MaxU16;
-                        for (size_t i = 0; i < count; ++i)
+                        for (uint64_t i = 0; i < count; ++i)
                             pixels.push_back(pixel);
                     }
                     else
                     {
-                        for (size_t i = 0; i < count; ++i)
+                        for (uint64_t i = 0; i < count; ++i)
                         {
                             is.get(tmp_color.c1).get(tmp_color.c2);
                             pixel.r = (tmp_color.u & 0b0111110000000000) << 1;
@@ -1553,12 +1552,12 @@ namespace Image
                         pixel.g = is.get() << 8;
                         pixel.r = is.get() << 8;
                         pixel.a = MaxU16;
-                        for (size_t i = 0; i < count; ++i)
+                        for (uint64_t i = 0; i < count; ++i)
                             pixels.push_back(pixel);
                     }
                     else
                     {
-                        for (size_t i = 0; i < count; ++i)
+                        for (uint64_t i = 0; i < count; ++i)
                         {
                             pixel.b = is.get() << 8;
                             pixel.g = is.get() << 8;
@@ -1585,12 +1584,12 @@ namespace Image
                         pixel.g = is.get() << 8;
                         pixel.r = is.get() << 8;
                         pixel.a = is.get() << 8;
-                        for (size_t i = 0; i < count; ++i)
+                        for (uint64_t i = 0; i < count; ++i)
                             pixels.push_back(pixel);
                     }
                     else
                     {
-                        for (size_t i = 0; i < count; ++i)
+                        for (uint64_t i = 0; i < count; ++i)
                         {
                             pixel.b = is.get() << 8;
                             pixel.g = is.get() << 8;
@@ -1614,10 +1613,10 @@ namespace Image
 
     Targa::Pixels Targa::loadMonoRleData(std::istream &is, const Header header) const
     {
-        const size_t size = header.width * header.height;
+        const uint64_t size = header.width * header.height;
         Pixels pixels;
         RGBA pixel;
-        size_t count = 0;
+        uint64_t count = 0;
         E::Union8 rle;
         E::Union8 tmp;
 
@@ -1631,12 +1630,12 @@ namespace Image
                 is.get(tmp.c1);
                 pixel = {tmp.u, tmp.u, tmp.u, 255};
                 pixel = pixel << 8;
-                for (size_t i = 0; i < count; ++i)
+                for (uint64_t i = 0; i < count; ++i)
                     pixels.push_back(pixel);
             }
             else
             {
-                for (size_t i = 0; i < count; ++i)
+                for (uint64_t i = 0; i < count; ++i)
                 {
                     is.get(tmp.c1);
                     pixel = {tmp.u, tmp.u, tmp.u, 255};
