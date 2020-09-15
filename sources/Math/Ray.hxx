@@ -4,20 +4,20 @@
 
 namespace Math
 {
-    template <Common::Concept::Number T>
+    template <Common::Concept::Number N, template <typename> typename V>
     class Ray {
     public:
         //--- public types and constants ---
-        static constexpr T MinT = 0;
-        static constexpr T MaxT = std::numeric_limits<T>::max();
+        static constexpr N MinN = 0;
+        static constexpr N MaxN = std::numeric_limits<N>::max();
 
         //--- public constructors ---
         Ray() noexcept
-        : _origin(), _direction(), _distance(MaxT)
+        : _origin(), _direction(), _distance(MaxN)
         {
         }
 
-        Ray(const Vector3<T> &org, const Vector3<T> &dir, const T dist = MaxT) noexcept
+        Ray(const V<N> &org, const V<N> &dir, const N dist = MaxN) noexcept
         : _origin(org), _direction(dir), _distance(dist)
         {
         }
@@ -75,32 +75,32 @@ namespace Math
         }
 
         //--- public methods ---
-        Vector3<T> origin() const noexcept
+        V<N> origin() const noexcept
         {
             return _origin;
         }
 
-        void setOrigin(const Vector3<T> &vec) noexcept
+        void setOrigin(const V<N> &vec) noexcept
         {
             _origin = vec;
         }
 
-        Vector3<T> direction() const noexcept
+        V<N> direction() const noexcept
         {
             return _direction;
         }
 
-        void setDirection(const Vector3<T> &vec) noexcept
+        void setDirection(const V<N> &vec) noexcept
         {
             _direction = vec;
         }
 
-        T distance() const noexcept
+        N distance() const noexcept
         {
             return _distance;
         }
 
-        bool setDistance(const T val) noexcept
+        bool setDistance(const N val) noexcept
         {
             if (Common::Tools::inRange(val, 0))
             {
@@ -112,15 +112,15 @@ namespace Math
             return false;
         }
 
-        void pointAt(const Vector3<T> &vec) noexcept
+        void pointAt(const V<N> &vec) noexcept
         {
             _direction = (vec - _origin).normalized();
         }
 
     private:
         //--- private properties ---
-        Vector3<T> _origin;
-        Vector3<T> _direction;
-        T _distance;
+        V<N> _origin;
+        V<N> _direction;
+        N _distance;
     };
 }
