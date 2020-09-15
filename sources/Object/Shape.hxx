@@ -2,8 +2,7 @@
 
 #include <utility>
 #include "Common/Concepts.hxx"
-#include "Vector3.hxx"
-#include "Ray.hxx"
+#include "Math/Math.hxx"
 
 namespace Math
 {
@@ -11,7 +10,7 @@ namespace Math
     class Shape {
     public:
         //--- public types and constants ---
-        using Intersection = std::tuple<bool,T,Shape *>;
+        using Intersection = std::tuple<bool,bool,T,Vector3<T>,Shape *>;
         static constexpr T MinRange = 0;
         static constexpr T MaxRange = std::numeric_limits<T>::max();
 
@@ -76,7 +75,7 @@ namespace Math
             _origin = vec;
         }
 
-        virtual Intersection intersect(const Ray<T> &ray) = 0;
+        virtual Intersection intersect(const Ray<T,Vector3> &ray) = 0;
 
     private:
         //--- private properties ---

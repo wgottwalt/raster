@@ -198,7 +198,7 @@ namespace Math
             return false;
         }
 
-        Ray<T> ray(const int64_t x, const int64_t y) const noexcept
+        Ray<T,Vector3> ray(const int64_t x, const int64_t y) const noexcept
         {
             if (Common::Tools::inRange(x, MinInt64, MaxInt64) &&
               Common::Tools::inRange(y, MinInt64, MaxInt64))
@@ -213,9 +213,9 @@ namespace Math
             return {{0, 0, 0}, {0, 0, 0}};
         }
 
-        virtual Camera::Intersection intersect(const Ray<T> &) override final
+        virtual Camera::Intersection intersect(const Ray<T,Vector3> &) override final
         {
-            return {false, 0, nullptr};
+            return {false, false, 0, {}, nullptr};
         }
 
     protected:

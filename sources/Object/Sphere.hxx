@@ -88,7 +88,7 @@ namespace Math
             return false;
         }
 
-        virtual Sphere::Intersection intersect(const Ray<T> &ray) override final
+        virtual Sphere::Intersection intersect(const Ray<T,Vector3> &ray) override final
         {
             const Vector3<T> diff = Shape<T>::origin() - ray.origin();
 
@@ -102,11 +102,15 @@ namespace Math
                     const T t0 = a - c;
                     const T t1 = a + c;
 
-                    return {true, (t0 < 0) ? t1 : t0, this};
+                    if (t0 > 0)
+                    {
+                        const auto cam_to_hit = ray.direction() * t0 + ray.origin();
+                        return {true, false, t0, -(Shape<T>::origin() - cam_to_hit).normalized(), this};
+                    }
                 }
             }
 
-            return {false, 0, nullptr};
+            return {false, false, 0, {}, nullptr};
         }
 
     private:
