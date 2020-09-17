@@ -12,8 +12,8 @@ namespace Image
     // - uses RLE compression with 1-byte headers, most significant bit set means repeat, other
     //   seven bits hold the amount (max 128), rle data is per pixel (RGBA16161616) and ignores
     //   scanlines
-    // - version 1 format: identifier "simple01" (8 byte), width width (32bit unsigned),
-    //                     height (32bit unsigned), size (64bit unsigned), rle data (size bytes)
+    // - version 1 format: identifier "simple01" (8 byte), width (32bit unsigned), height (32bit
+    //                     unsigned), size (64bit unsigned), rle data (size bytes)
     // - everything is big endian
     //
     class Simple01 : public Base {
