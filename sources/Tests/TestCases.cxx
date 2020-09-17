@@ -1,10 +1,10 @@
 #include "TestCases.hxx"
 
-namespace TestCases
+namespace TestCase
 {
-    bool pictureTest01(Image::Base &pic)
+    bool applyToImageCase00(Image::Base &pic)
     {
-        if ((pic.width() > 320) && (pic.height() > 240))
+        if ((pic.width() >= DefaultMinWidth) && (pic.height() >= DefaultMinHeight))
         {
             using Color = Image::Base::RGBA;
             const int64_t w = pic.width();

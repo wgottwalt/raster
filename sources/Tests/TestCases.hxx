@@ -2,7 +2,12 @@
 
 #include "Image/Image.hxx"
 
-namespace Case
+namespace TestCase
 {
-    bool applyImageTestCase_01(Image::Base &pic);
+    static constexpr int64_t DefaultMinWidth = 320;
+    static constexpr int64_t DefaultMinHeight = 240;
+    static constexpr int64_t DefaultWidth = 1280;
+    static constexpr int64_t DefaultHeight = 720;
+
+    bool applyToImageCase00(Image::Base &pic);
 }
