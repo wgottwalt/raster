@@ -1,74 +1,170 @@
 #include <iostream>
-#include <X11/Xutil.h>
 #include "Image/PPM.hxx"
-
-const int64_t width = 800;
-const int64_t height = 600;
+#include "TestCases.hxx"
 
 int32_t main(int32_t argc, char **argv)
 {
-    Image::PPM ppm(width, height, Image::PPM::RGBA::Black);
-    Display *display = XOpenDisplay(nullptr);
-    Visual *visual = DefaultVisual(display, 0);
-    Window window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0, ppm.width(),
-                                        ppm.height(), 1, 0, 0);
-    int32_t loop = 0;
-    const uint16_t part = std::numeric_limits<uint16_t>::max() / height / 2;
+    Image::PPM ppm;
+    std::string filename = "ppm_test.ppm";
+    int64_t width = TestCase::DefaultWidth;
+    int64_t height = TestCase::DefaultHeight;
+    bool binary = true;
+    bool wide = false;
 
-    for (int64_t i = 0; i < (height / 2); ++i)
-        ppm.setLine(0, i * 2, (width - 1), i * 2, Image::PPM::RGBA(i * part, i * part, i * part, 0xffff));
-    for (int64_t i = 0; i < 30; ++++++i)
-        ppm.setTriangle(width / 2, i, i, height - 1 - i, width - 1 - i, height - 1 - i, Image::PPM::RGBA::Red, false);
-    ppm.setTriangle(width / 2, 35, 35, height - 36, width - 36, height - 36, Image::PPM::RGBA::Blue, true);
-    ppm.setRectangle(200, 200, width - 200, height - 200, Image::PPM::RGBA::Green, true);
-    ppm.setRectangle(210, 210, width - 210, height - 210, Image::PPM::RGBA::Black, false);
-    ppm.setCircle(width / 2, height / 2, (std::min(width, height) / 2) - (std::min(width, height) / 3), Image::PPM::RGBA::White, false);
-    ppm.setCircle(width / 2, height / 2, (std::min(width, height) / 2) - (std::min(width, height) / 3) - 5, Image::PPM::RGBA::White, true);
-
-    if (argc == 2)
+    if (argc > 1)
     {
-        ppm.setComment("created by " + std::string(argv[0]));
-        ppm.setWideMode();
-        ppm.setBinaryMode();
-        ppm.save(argv[1]);
-    }
+        std::string arg;
 
-    XImage *ximage = ppm.cloneXImage(display, visual);
-
-    XSelectInput(display, window, ButtonPressMask | ExposureMask);
-    XMapWindow(display, window);
-
-    while (loop < 10)
-    {
-        XEvent event;
-
-        XNextEvent(display, &event);
-        switch (event.type)
+        for (int32_t i = 1; i < argc; ++i)
         {
-            case Expose:
-                XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 0, 0, ppm.width(),
-                          ppm.height());
-                break;
+            arg = argv[i];
 
-            case ButtonPress:
-                XDestroyImage(ximage);
-                ppm.filter(Image::Filter::Smooth);
-                ppm.flipHorizontal();
-                ppm.resize(width - (loop + 1) * 50, height - (loop + 1) * 50, Image::Scaler::FastBillinear);
-                ximage = ppm.cloneXImage(display, visual);
-                XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 0, 0, ppm.width(),
-                          ppm.height());
-                ++loop;
-                break;
+            if (arg.substr(0, 9) == "--output=")
+            {
+                if (arg.size() > 9)
+                    filename = arg.substr(9, std::string::npos);
+                else
+                {
+                    std::cerr << "ERROR: no filename parameter given, using default '" << filename
+                              << "'" << std::endl;
+                }
+            }
 
-            default:
-                break;
+            if (arg.substr(0, 8) == "--width=")
+            {
+                if (arg.size() > 8)
+                {
+                    try
+                    {
+                        width = std::stoll(arg.substr(8, std::string::npos));
+                        if (width > Image::PPM::MaxWidth)
+                        {
+                            std::cerr << "ERROR: width " << width << " above maximum PPM width, "
+                                      << "using default width '" << TestCase::DefaultWidth << "'"
+                                      << std::endl;
+                            width = TestCase::DefaultWidth;
+                        }
+                    }
+                    catch (...)
+                    {
+                        std::cerr << "ERROR: unable to parse width '"
+                                  << arg.substr(8, std::string::npos)
+                                  << "', using default width " << TestCase::DefaultWidth
+                                  << std::endl;
+                        width = TestCase::DefaultWidth;
+                    }
+                }
+                else
+                {
+                    std::cout << "ERROR: no width parameter given, using default width '"
+                              << TestCase::DefaultWidth << "'" << std::endl;
+                }
+                continue;
+            }
+
+            if (arg.substr(0, 9) == "--height=")
+            {
+                if (arg.size() > 9)
+                {
+                    try
+                    {
+                        height = std::stoll(arg.substr(9, std::string::npos));
+                        if (height > Image::PPM::MaxHeight)
+                        {
+                            std::cerr << "ERROR: height " << height << " above maximum PPM height, "
+                                      << "using default height '" << TestCase::DefaultHeight << "'"
+                                      << std::endl;
+                            height = TestCase::DefaultHeight;
+                        }
+                    }
+                    catch (...)
+                    {
+                        std::cerr << "ERROR: unable to parse height '"
+                                  << arg.substr(9, std::string::npos)
+                                  << "', using default height " << TestCase::DefaultHeight
+                                  << std::endl;
+                        height = TestCase::DefaultHeight;
+                    }
+                }
+                else
+                {
+                    std::cout << "ERROR: no height parameter given, using default height '"
+                              << TestCase::DefaultHeight << "'" << std::endl;
+                }
+                continue;
+            }
+
+            if (arg.substr(0, 14) == "--compression=")
+            {
+                if (arg.size() > 14)
+                {
+                    arg = arg.substr(14, std::string::npos);
+                    if (arg == "binary")
+                        binary = true;
+                    else if (arg == "none")
+                        binary = false;
+                    else
+                    {
+                        std::cerr << "ERROR: unknown compression parameter, using default '"
+                                  << (binary ? "binary" : "none") << "'" << std::endl;
+                        binary = true;
+                    }
+                }
+                else
+                {
+                    std::cerr << "ERROR: no compression parameter given, using default '"
+                              << (binary ? "binary" : "none") << "'" << std::endl;
+                }
+                continue;
+            }
+
+            if (arg.substr(0, 7) == "--wide=")
+            {
+                if (arg.size() > 7)
+                {
+                    arg = arg.substr(7, std::string::npos);
+                    if (arg == "yes")
+                        wide = true;
+                    else if (arg == "no")
+                        wide = false;
+                    else
+                    {
+                        std::cerr << "ERROR: unknown wide paramater given, using default '"
+                                  << (wide ? "yes" : "no") << "'" << std::endl;
+                    }
+                }
+                else
+                {
+                    std::cerr << "ERROR: no wide parameter given, using default '"
+                              << (wide ? "yes" : "no") << "'" << std::endl;
+                }
+                continue;
+            }
         }
     }
 
-    XDestroyWindow(display, window);
-    XDestroyImage(ximage);
-    XCloseDisplay(display);
+    ppm.resize(width, height, Image::Scaler::Clear);
+
+    if (TestCase::applyToImageCase00(ppm))
+    {
+        ppm.setWideMode(wide);
+        ppm.setBinaryMode(binary);
+        ppm.save(filename);
+    }
+    else
+    {
+        if (width < TestCase::DefaultMinWidth)
+        {
+            std::cerr << "ERROR: '" << width << "' below minimum required width '"
+                      << TestCase::DefaultMinWidth << "'" << std::endl;
+        }
+
+        if (height < TestCase::DefaultMinHeight)
+        {
+            std::cerr << "ERROR: '" << height << "' below minimum required height '"
+                      << TestCase::DefaultMinHeight << "'" << std::endl;
+        }
+    }
 
     return 0;
 }
