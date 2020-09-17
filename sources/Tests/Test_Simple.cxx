@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Image/Simple00.hxx"
 #include "Image/Simple01.hxx"
+#include "Image/Simple02.hxx"
 #include "TestCases.hxx"
 
 static const std::string DefFilename = "simple_test.spl";
@@ -15,7 +16,7 @@ void showHelp(const char *name)
                 << TestCase::DefaultWidth << "'\n"
               << "  --height=<height>    uses this height instead of the default '"
                 << TestCase::DefaultHeight << "'\n"
-              << "  --version=<0,1>      picks the Simple image version\n"
+              << "  --version=<0..2>     picks the Simple image version\n"
               << std::endl;
 }
 
@@ -126,7 +127,7 @@ int32_t main(int32_t argc, char **argv)
                     try
                     {
                         version = std::stoi(arg.substr(10, std::string::npos));
-                        if (version > 1)
+                        if (version > 2)
                         {
                             std::cerr << "ERROR: unsupported version '" << version << "', using "
                                       << "default version '0'" << std::endl;
@@ -158,6 +159,10 @@ int32_t main(int32_t argc, char **argv)
 
         switch (version)
         {
+            case 2:
+                simple = new Image::Simple02(width, height);
+                break;
+
             case 1:
                 simple = new Image::Simple01(width, height);
                 break;
