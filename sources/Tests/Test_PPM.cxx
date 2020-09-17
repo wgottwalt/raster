@@ -2,6 +2,8 @@
 #include "Image/PPM.hxx"
 #include "TestCases.hxx"
 
+static const std::string DefFilename = "ppm_test.ppm";
+
 void showHelp(const char *name)
 {
     std::cout << "usage: " << name << " [options]\n"
@@ -19,7 +21,7 @@ void showHelp(const char *name)
 
 int32_t main(int32_t argc, char **argv)
 {
-    std::string filename = "ppm_test.ppm";
+    std::string filename = DefFilename;
     int64_t width = TestCase::DefaultWidth;
     int64_t height = TestCase::DefaultHeight;
     bool binary = true;
@@ -47,8 +49,9 @@ int32_t main(int32_t argc, char **argv)
                     filename = arg.substr(9, std::string::npos);
                 else
                 {
-                    std::cerr << "ERROR: no filename parameter given, using default '" << filename
-                              << "'" << std::endl;
+                    std::cerr << "ERROR: no filename parameter given, using default '"
+                              << DefFilename << "'" << std::endl;
+                    filename = DefFilename;
                 }
                 continue;
             }
@@ -62,7 +65,7 @@ int32_t main(int32_t argc, char **argv)
                         width = std::stoll(arg.substr(8, std::string::npos));
                         if (width > Image::PPM::MaxWidth)
                         {
-                            std::cerr << "ERROR: width " << width << " above maximum PPM width, "
+                            std::cerr << "ERROR: width '" << width << "' above maximum PPM width, "
                                       << "using default width '" << TestCase::DefaultWidth << "'"
                                       << std::endl;
                             width = TestCase::DefaultWidth;
@@ -72,15 +75,16 @@ int32_t main(int32_t argc, char **argv)
                     {
                         std::cerr << "ERROR: unable to parse width '"
                                   << arg.substr(8, std::string::npos)
-                                  << "', using default width " << TestCase::DefaultWidth
+                                  << "', using default width '" << TestCase::DefaultWidth << "'"
                                   << std::endl;
                         width = TestCase::DefaultWidth;
                     }
                 }
                 else
                 {
-                    std::cout << "ERROR: no width parameter given, using default width '"
+                    std::cerr << "ERROR: no width parameter given, using default width '"
                               << TestCase::DefaultWidth << "'" << std::endl;
+                    width = TestCase::DefaultWidth;
                 }
                 continue;
             }
@@ -94,9 +98,9 @@ int32_t main(int32_t argc, char **argv)
                         height = std::stoll(arg.substr(9, std::string::npos));
                         if (height > Image::PPM::MaxHeight)
                         {
-                            std::cerr << "ERROR: height " << height << " above maximum PPM height, "
-                                      << "using default height '" << TestCase::DefaultHeight << "'"
-                                      << std::endl;
+                            std::cerr << "ERROR: height '" << height << "' above maximum PPM height"
+                                      << ", using default height '" << TestCase::DefaultHeight
+                                      << "'" << std::endl;
                             height = TestCase::DefaultHeight;
                         }
                     }
@@ -104,15 +108,16 @@ int32_t main(int32_t argc, char **argv)
                     {
                         std::cerr << "ERROR: unable to parse height '"
                                   << arg.substr(9, std::string::npos)
-                                  << "', using default height " << TestCase::DefaultHeight
+                                  << "', using default height '" << TestCase::DefaultHeight << "'"
                                   << std::endl;
                         height = TestCase::DefaultHeight;
                     }
                 }
                 else
                 {
-                    std::cout << "ERROR: no height parameter given, using default height '"
+                    std::cerr << "ERROR: no height parameter given, using default height '"
                               << TestCase::DefaultHeight << "'" << std::endl;
+                    height = TestCase::DefaultHeight;
                 }
                 continue;
             }
@@ -128,15 +133,16 @@ int32_t main(int32_t argc, char **argv)
                         binary = false;
                     else
                     {
-                        std::cerr << "ERROR: unknown compression parameter, using default '"
-                                  << (binary ? "binary" : "none") << "'" << std::endl;
+                        std::cerr << "ERROR: unknown compression parameter, using default 'binary'"
+                                  << std::endl;
                         binary = true;
                     }
                 }
                 else
                 {
-                    std::cerr << "ERROR: no compression parameter given, using default '"
-                              << (binary ? "binary" : "none") << "'" << std::endl;
+                    std::cerr << "ERROR: no compression parameter given, using default 'binary'"
+                              << std::endl;
+                    binary = true;
                 }
                 continue;
             }
@@ -152,14 +158,15 @@ int32_t main(int32_t argc, char **argv)
                         wide = false;
                     else
                     {
-                        std::cerr << "ERROR: unknown wide paramater given, using default '"
-                                  << (wide ? "yes" : "no") << "'" << std::endl;
+                        std::cerr << "ERROR: unknown wide paramater given, using default 'no'"
+                                  << std::endl;
+                        wide = false;
                     }
                 }
                 else
                 {
-                    std::cerr << "ERROR: no wide parameter given, using default '"
-                              << (wide ? "yes" : "no") << "'" << std::endl;
+                    std::cerr << "ERROR: no wide parameter given, using default 'no'" << std::endl;
+                    wide = false;
                 }
                 continue;
             }
