@@ -2,14 +2,29 @@
 #include "Image/PPM.hxx"
 #include "TestCases.hxx"
 
+void showHelp(const char *name)
+{
+    std::cout << "usage: " << name << " [options]\n"
+              << "options:\n"
+              << "  --help               this help screen\n"
+              << "  --output=<filename>  uses filename for created image\n"
+              << "  --width=<width>      uses this width instead of the default '"
+                << TestCase::DefaultWidth << "'\n"
+              << "  --height=<height>    uses this height instead of the default '"
+                << TestCase::DefaultHeight << "'\n"
+              << "  --compression=<c>    uses the compression c (none/binary)\n"
+              << "  --wide=<yes/no>      uses wide mode (aka 48bit depth)\n"
+              << std::endl;
+}
+
 int32_t main(int32_t argc, char **argv)
 {
-    Image::PPM ppm;
     std::string filename = "ppm_test.ppm";
     int64_t width = TestCase::DefaultWidth;
     int64_t height = TestCase::DefaultHeight;
     bool binary = true;
     bool wide = false;
+    bool help = false;
 
     if (argc > 1)
     {
@@ -18,6 +33,13 @@ int32_t main(int32_t argc, char **argv)
         for (int32_t i = 1; i < argc; ++i)
         {
             arg = argv[i];
+
+            if (arg == "--help")
+            {
+                showHelp(argv[0]);
+                help = true;
+                continue;
+            }
 
             if (arg.substr(0, 9) == "--output=")
             {
@@ -28,6 +50,7 @@ int32_t main(int32_t argc, char **argv)
                     std::cerr << "ERROR: no filename parameter given, using default '" << filename
                               << "'" << std::endl;
                 }
+                continue;
             }
 
             if (arg.substr(0, 8) == "--width=")
@@ -143,26 +166,29 @@ int32_t main(int32_t argc, char **argv)
         }
     }
 
-    ppm.resize(width, height, Image::Scaler::Clear);
+    if (!help)
+    {
+        Image::PPM ppm(width, height);
 
-    if (TestCase::applyToImageCase00(ppm))
-    {
-        ppm.setWideMode(wide);
-        ppm.setBinaryMode(binary);
-        ppm.save(filename);
-    }
-    else
-    {
-        if (width < TestCase::DefaultMinWidth)
+        if (TestCase::applyToImageCase00(ppm))
         {
-            std::cerr << "ERROR: '" << width << "' below minimum required width '"
-                      << TestCase::DefaultMinWidth << "'" << std::endl;
+            ppm.setWideMode(wide);
+            ppm.setBinaryMode(binary);
+            ppm.save(filename);
         }
-
-        if (height < TestCase::DefaultMinHeight)
+        else
         {
-            std::cerr << "ERROR: '" << height << "' below minimum required height '"
-                      << TestCase::DefaultMinHeight << "'" << std::endl;
+            if (width < TestCase::DefaultMinWidth)
+            {
+                std::cerr << "ERROR: '" << width << "' below minimum required width '"
+                          << TestCase::DefaultMinWidth << "'" << std::endl;
+            }
+
+            if (height < TestCase::DefaultMinHeight)
+            {
+                std::cerr << "ERROR: '" << height << "' below minimum required height '"
+                          << TestCase::DefaultMinHeight << "'" << std::endl;
+            }
         }
     }
 
