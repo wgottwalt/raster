@@ -79,10 +79,9 @@ int32_t main(int32_t argc, char **argv)
         else if (I::Simple00::identify(filename))
             image = new I::Simple00(filename);
         else if (I::Simple01::identify(filename))
-        {
             image = new I::Simple01(filename);
-            std::cout << "dbg viewer: " << image->width() << " " << image->height() << std::endl;
-        }
+        else if (I::Simple02::identify(filename))
+            image = new I::Simple02(filename);
         else if (I::Targa::identify(filename))
             image = new I::Targa(filename);
     }
