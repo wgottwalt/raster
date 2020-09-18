@@ -26,7 +26,7 @@ namespace Color::Quantize
         if (in_pixels.size() != static_cast<size_t>(width * height))
             return false;
 
-        if (in_pixels.size() < static_cast<size_t>(colors))
+        if (in_pixels.size() <= static_cast<size_t>(colors))
             return false;
 
         std::vector<RGBA> tmp;
