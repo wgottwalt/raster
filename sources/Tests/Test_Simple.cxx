@@ -81,7 +81,7 @@ int32_t main(int32_t argc, char **argv)
                 }
                 else
                 {
-                    std::cout << "ERROR: no width parameter given, using default width '"
+                    std::cerr << "ERROR: no width parameter given, using default width '"
                               << TestCase::DefaultWidth << "'" << std::endl;
                     width = TestCase::DefaultWidth;
                 }
@@ -144,7 +144,7 @@ int32_t main(int32_t argc, char **argv)
                 }
                 else
                 {
-                    std::cout << "ERROR: no version parameter gives, using default version '0'"
+                    std::cerr << "ERROR: no version parameter gives, using default version '0'"
                               << std::endl;
                     version = 0;
                 }
