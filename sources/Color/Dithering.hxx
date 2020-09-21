@@ -16,13 +16,13 @@ namespace Color::Dithering
         FloydSteinberg
     };
 
-    template <Detail::Color C>
-    std::vector<C> apply(const std::vector<C> &pixels, const std::vector<C> &palette,
-                         const int64_t width, const int64_t height, const Algorithm alg)
+    template <Concept::RGBA Color>
+    std::vector<Color> apply(const std::vector<Color> &pixels, const std::vector<Color> &palette,
+                             const int64_t width, const int64_t height, const Algorithm alg)
     {
         const uint64_t psize = palette.size();
-        const int32_t Max = std::numeric_limits<decltype(C::r)>::max();
-        std::vector<C> tpxls;
+        const int32_t Max = std::numeric_limits<decltype(Color::r)>::max();
+        std::vector<Color> tpxls;
 
         if (psize > 1)
             tpxls = pixels;
@@ -38,7 +38,7 @@ namespace Color::Dithering
                     for (int64_t x = 0; x < width; ++x)
                     {
                         const auto op = tpxls[y * width + x];
-                        const auto np = palette[Color::Detail::closestMatch(op, palette)];
+                        const auto np = palette[Detail::closestMatch(op, palette)];
                         const int32_t er = op.r - np.r;
                         const int32_t eg = op.g - np.g;
                         const int32_t eb = op.b - np.b;
@@ -109,7 +109,7 @@ namespace Color::Dithering
                     for (int64_t x = 0; x < width; ++x)
                     {
                         const auto &op = tpxls[y * width + x];
-                        const auto np = palette[Color::Detail::closestMatch(op, palette)];
+                        const auto np = palette[Detail::closestMatch(op, palette)];
                         const int32_t er = op.r - np.r;
                         const int32_t eg = op.g - np.g;
                         const int32_t eb = op.b - np.b;

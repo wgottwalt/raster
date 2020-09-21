@@ -8,17 +8,20 @@ namespace Color
 {
     class RGBA8888;
     class RGBA16161616;
+
+    namespace Concept
+    {
+        template <typename T>
+        concept RGBA = std::is_same<T,RGBA8888>::value || std::is_same<T,RGBA16161616>::value;
+    }
 }
 
 namespace Color::Detail
 {
-    template <typename T>
-    concept Color = std::is_same<T,RGBA8888>::value || std::is_same<T,RGBA16161616>::value;
-
-    template <Common::Concept::Class RGBA>
-    inline RGBA rgbaDistance(const RGBA &val1, const RGBA &val2)
+    template <Concept::RGBA Color>
+    inline Color rgbaDistance(const Color &val1, const Color &val2)
     {
-        using VType = decltype(RGBA::value);
+        using VType = decltype(Color::value);
 
         return {static_cast<VType>(std::abs(val1.r - val2.r)) +
                 static_cast<VType>(std::abs(val1.g - val2.g)) +
@@ -26,10 +29,10 @@ namespace Color::Detail
                 static_cast<VType>(std::abs(val1.a - val2.a))};
     }
 
-    template <Common::Concept::Class RGBA>
-    size_t closestMatch(const RGBA &pixel, const std::vector<RGBA> &palette)
+    template <Concept::RGBA Color>
+    size_t closestMatch(const Color &pixel, const std::vector<Color> &palette)
     {
-        using VType = decltype(RGBA::value);
+        using VType = decltype(Color::value);
 
         size_t index = 0;
         VType current_distance = std::numeric_limits<size_t>::max();
