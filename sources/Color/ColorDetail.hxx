@@ -4,8 +4,17 @@
 #include <limits>
 #include "Common/Concepts.hxx"
 
+namespace Color
+{
+    class RGBA8888;
+    class RGBA16161616;
+}
+
 namespace Color::Detail
 {
+    template <typename T>
+    concept Color = std::is_same<T,RGBA8888>::value || std::is_same<T,RGBA16161616>::value;
+
     template <Common::Concept::Class RGBA>
     inline RGBA rgbaDistance(const RGBA &val1, const RGBA &val2)
     {

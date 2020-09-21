@@ -5,17 +5,11 @@
 #include <vector>
 #include "Common/Concepts.hxx"
 #include "Common/Tools.hxx"
-#include "Color.hxx"
+#include "ColorDetail.hxx"
 
 namespace Color::Dithering
 {
     namespace T = Common::Tools;
-
-    namespace Detail
-    {
-        template <typename T>
-        concept Color = std::is_same<T,RGBA8888>::value || std::is_same<T,RGBA16161616>::value;
-    }
 
     enum class Algorithm : uint8_t {
         Burkes,
