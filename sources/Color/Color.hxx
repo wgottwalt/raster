@@ -2,6 +2,7 @@
 
 #include "RGBA8888.hxx"
 #include "RGBA16161616.hxx"
+#include "QRGBA.hxx"
 #include "ColorDetail.hxx"
 #include "Quantize.hxx"
 
