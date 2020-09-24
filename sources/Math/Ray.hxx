@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Common/Tools.hxx"
 #include "Vector3.hxx"
 
 namespace Math
