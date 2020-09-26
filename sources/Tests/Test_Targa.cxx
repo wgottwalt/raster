@@ -20,6 +20,7 @@ void showHelp(const char *name)
                 << TestCase::DefaultHeight << "'\n"
               << "  --version=<0,1>      picks the Targa format version\n"
               << "  --depth=<num>        sets one of the supported depths of 1, 8, 16, 24 or 32 bits\n"
+              << "  --compression=<c>    use the compression c (none or rle)\n"
               << std::endl;
 }
 
@@ -30,6 +31,7 @@ int32_t main(int32_t argc, char **argv)
     int64_t height = TestCase::DefaultHeight;
     int32_t version = 1;
     int32_t depth = DefDepth;
+    bool rle = false;
     bool help = false;
 
     if (argc > 1)
@@ -148,7 +150,7 @@ int32_t main(int32_t argc, char **argv)
                 }
                 else
                 {
-                    std::cerr << "ERROR: no version parameter gives, using default version '1'"
+                    std::cerr << "ERROR: no version parameter given, using default version '1'"
                               << std::endl;
                     version = 1;
                 }
@@ -179,11 +181,34 @@ int32_t main(int32_t argc, char **argv)
                 }
                 else
                 {
-                    std::cerr << "ERROR: no depth parameter gives, using default depth '" << DefDepth
+                    std::cerr << "ERROR: no depth parameter given, using default depth '" << DefDepth
                               << "'" << std::endl;
                     depth = DefDepth;
                 }
+                continue;
+            }
 
+            if (arg.substr(0, 14) == "--compression=")
+            {
+                if (arg.size() > 14)
+                {
+                    if (arg.substr(14, std::string::npos) == "none")
+                        rle = false;
+                    else if (arg.substr(14, std::string::npos) == "rle")
+                        rle = true;
+                    else
+                    {
+                        std::cerr << "ERROR: unknown compression paramter given, using default "
+                                  << "'none'" << std::endl;
+                        rle = false;
+                    }
+                }
+                else
+                {
+                    std::cerr << "ERROR: no compression parameter given, using default compression "
+                              << "'none'" << std::endl;
+                    rle = false;
+                }
                 continue;
             }
         }
@@ -198,24 +223,35 @@ int32_t main(int32_t argc, char **argv)
             switch (depth)
             {
                 case 1:
-                    targa.setImageType(Image::Targa::ImageType::Mono);
+                    if (rle)
+                        targa.setImageType(Image::Targa::ImageType::MonoRLE);
+                    else
+                        targa.setImageType(Image::Targa::ImageType::Mono);
                     targa.setGreyscaleMonochromeMode(false);
                     break;
 
                 case 8:
-                    targa.setImageType(Image::Targa::ImageType::Mapped);
+                    if (rle)
+                        targa.setImageType(Image::Targa::ImageType::MappedRLE);
+                    else
+                        targa.setImageType(Image::Targa::ImageType::Mapped);
                     break;
 
                 case 16:
-                    targa.setDepth(16);
-                    break;
-
-                case 32:
-                    targa.setDepth(32);
-                    break;
-
                 case 24:
+                case 32:
+                    if (rle)
+                        targa.setImageType(Image::Targa::ImageType::TruecolorRLE);
+                    else
+                        targa.setImageType(Image::Targa::ImageType::Truecolor);
+                    targa.setDepth(depth);
+                    break;
+
                 default:
+                    if (rle)
+                        targa.setImageType(Image::Targa::ImageType::TruecolorRLE);
+                    else
+                        targa.setImageType(Image::Targa::ImageType::Truecolor);
                     targa.setDepth(24);
             }
             targa.setVersion2((version > 1) ? true : false);
