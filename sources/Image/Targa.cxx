@@ -687,36 +687,21 @@ namespace Image
         switch (_depth)
         {
             case 15:
-            {
-                C::UnionRGBA5551 tmp;
-
-                data.reserve(pixels.size() * 2);
-                for (const auto &pixel : pixels)
-                {
-                    tmp.r = pixel.rh >> 3;
-                    tmp.g = pixel.gh >> 3;
-                    tmp.b = pixel.bh >> 3;
-                    tmp.a = 0;
-                    data += tmp.c2;
-                    data += tmp.c1;
-                }
-
-                break;
-            }
-
             case 16:
             {
-                C::UnionRGBA5551 tmp;
+                const bool alpha_bit = _image_descriptor & 0x01;
+                E::Union16 tmp;
 
                 data.reserve(pixels.size() * 2);
                 for (const auto &pixel : pixels)
                 {
-                    tmp.r = pixel.rh >> 3;
-                    tmp.g = pixel.gh >> 3;
-                    tmp.b = pixel.bh >> 3;
-                    tmp.a = pixel.ah ? 1 : 0;
-                    data += tmp.c2;
+                    tmp.u = 0;
+                    tmp.u |= (pixel.rh >> 3) << 10;
+                    tmp.u |= (pixel.gh >> 3) << 5;
+                    tmp.u |= (pixel.bh >> 3);
+                    tmp.u |= (alpha_bit && pixel.a) ? (1 << 15) : 0;
                     data += tmp.c1;
+                    data += tmp.c2;
                 }
 
                 break;
