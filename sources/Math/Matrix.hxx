@@ -84,6 +84,75 @@ namespace Math
             return m[col][row];
         }
 
+        //---
+        Matrix &operator+=(const Matrix& rhs) noexcept
+        {
+            for (int32_t i = 0; i < (R * C); ++i)
+                v[i] += rhs.v[i];
+
+            return *this;
+        }
+
+        template <Common::Concept::Number U>
+        Matrix &operator+=(const U val) noexcept
+        {
+            for (int32_t i = 0; i < (R * C); ++i)
+                v[i] += val;
+
+            return *this;
+        }
+
+        Matrix &operator-=(const Matrix &rhs) noexcept
+        {
+            for (int32_t i = 0; i < (R * C); ++i)
+                v[i] -= rhs.v[i];
+
+            return *this;
+        }
+
+        template <Common::Concept::Number U>
+        Matrix &operator-=(const U val) noexcept
+        {
+            for (int32_t i = 0; i < (R * C); ++i)
+                v[i] -= val;
+
+            return *this;
+        }
+
+        Matrix &operator*=(const Matrix &rhs) noexcept
+        {
+            for (int32_t i = 0; i < (R * C); ++i)
+                v[i] *= rhs.v[i];
+
+            return *this;
+        }
+
+        template <Common::Concept::Number U>
+        Matrix &operator*=(const U val) noexcept
+        {
+            for (int32_t i = 0; i < (R * C); ++i)
+                v[i] *= val;
+
+            return *this;
+        }
+
+        Matrix &operator/=(const Matrix &rhs) noexcept
+        {
+            for (int32_t i = 0; i < (R * C); ++i)
+                v[i] /= rhs.v[i];
+
+            return *this;
+        }
+
+        template <Common::Concept::Number U>
+        Matrix &operator/=(const U val) noexcept
+        {
+            for (int32_t i = 0; i < (R * C); ++i)
+                v[i] /= val;
+
+            return *this;
+        }
+
         //--- public methods ---
         bool isIdentity() const noexcept
         {
