@@ -4,6 +4,8 @@
 
 namespace Color
 {
+    class RGBA8888;
+
     class RGBA16161616 {
     public:
         //--- public types and constants ---
@@ -71,5 +73,6 @@ namespace Color
         uint16_t averageRGB() const noexcept;
         uint16_t averageRGBA() const noexcept;
         uint16_t grey() const noexcept;
+        RGBA8888 toRGBA8888() const noexcept;
     };
 }

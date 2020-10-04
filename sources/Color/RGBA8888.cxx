@@ -1,5 +1,6 @@
 #include <limits>
 #include <utility>
+#include "RGBA16161616.hxx"
 #include "RGBA8888.hxx"
 
 namespace Color
@@ -124,5 +125,11 @@ namespace Color
     uint8_t RGBA8888::grey() const noexcept
     {
         return 0.299083 * r + 0.585841 * g + 0.114076 * b;
+    }
+
+    RGBA16161616 RGBA8888::toRGBA16161616() const noexcept
+    {
+        return {static_cast<uint16_t>(r << 8), static_cast<uint16_t>(g << 8),
+                static_cast<uint16_t>(b << 8), static_cast<uint16_t>(a << 8)};
     }
 }
