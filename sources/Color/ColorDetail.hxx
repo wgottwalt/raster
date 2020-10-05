@@ -35,7 +35,7 @@ namespace Color::Detail
         using VType = decltype(Color::value);
 
         size_t index = 0;
-        VType current_distance = std::numeric_limits<size_t>::max();
+        VType current_distance = std::numeric_limits<VType>::max();
         VType distance = 0;
 
         for (size_t i = 0; i < palette.size(); ++i)
