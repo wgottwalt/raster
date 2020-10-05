@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <iostream>
 #include <vector>
 #include "Common/Concepts.hxx"
 #include "Common/Tools.hxx"
@@ -83,13 +82,15 @@ namespace Color::Quantize
 
                 for (auto node : _nodes)
                 {
-                    if (!node)
-                        continue;
-
-                    _color += node->_color;
-                    _count += node->_count;
-                    ++result;
-                    node = nullptr;
+                    if (node)
+                    {
+                        _color.r += node->_color.r;
+                        _color.g += node->_color.g;
+                        _color.b += node->_color.b;
+                        _count += node->_count;
+                        ++result;
+                        node = nullptr;
+                    }
                 }
 
                 return result - 1;
@@ -99,7 +100,9 @@ namespace Color::Quantize
             {
                 if (level >= MaxDepth)
                 {
-                    _color += color;
+                    _color.r += color.r;
+                    _color.g += color.g;
+                    _color.b += color.b;
                     ++_count;
                 }
                 else
@@ -257,7 +260,7 @@ namespace Color::Quantize
 
         out_pixels.resize(in_pixels.size());
         for (size_t i = 0; i < in_pixels.size(); ++i)
-            out_pixels[i] = palette[octree.paletteIndex(in_pixels[i])];
+            out_pixels[i] = palette[Color::Detail::closestMatch(in_pixels[i], palette)];
 
         return true;
     }
