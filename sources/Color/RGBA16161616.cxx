@@ -158,6 +158,13 @@ namespace Color
 
     RGBA8888 RGBA16161616::toRGBA8888() const noexcept
     {
-        return {r >> 8, g >> 8, b >> 8, a >> 8};
+        return {static_cast<uint8_t>(r >> 8), static_cast<uint8_t>(g >> 8),
+                static_cast<uint8_t>(b >> 8), static_cast<uint8_t>(a >> 8)};
+    }
+
+    std::string RGBA16161616::str() const noexcept
+    {
+        return std::to_string(r) + ", " + std::to_string(g) + ", " +
+               std::to_string(b) + ", " + std::to_string(a);
     }
 }
