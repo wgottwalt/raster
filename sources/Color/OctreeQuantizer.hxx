@@ -92,6 +92,7 @@ namespace Color::Quantize
                         _color.b += node->_color.b;
                         _count += node->_count;
                         ++result;
+                        delete node;
                         node = nullptr;
                     }
                 }
@@ -152,7 +153,7 @@ namespace Color::Quantize
 
         private:
             //--- private properties ---
-            std::array<Node *,MaxDepth> _nodes;
+            std::array<Node *,8> _nodes;
             QRGBA<int32_t> _color;
             int32_t _count;
             int32_t _pindex;
