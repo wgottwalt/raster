@@ -88,7 +88,7 @@ namespace Color::Quantize
 
         out_pixels.resize(width * height);
         for (size_t i = 0; i < in_pixels.size(); ++i)
-            out_pixels[i] = palette[Detail::closestMatch(in_pixels[i], palette)];
+            out_pixels[i] = palette[Color::Detail::closestMatch(in_pixels[i], palette)];
 
         return true;
     }
