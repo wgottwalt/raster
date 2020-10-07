@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <limits>
 #include "Common/Concepts.hxx"
 #include "ColorDetail.hxx"
@@ -23,17 +24,26 @@ namespace Color::Quantize
             return true;
 
         const CType Max = std::numeric_limits<CType>::max();
+        const CType ChanMax = std::cbrt(colors);
 
         palette.reserve(colors);
-        for (int64_t i = 0; i < (colors >> 2); ++i)
+        for (CType ir = 0; ir < ChanMax; ++ir)
         {
-            const auto val = Max / (colors >> 2) * i;
+            const CType r = Max / ChanMax * ir;
 
-            palette.push_back({val, val, val, Max});
-            palette.push_back({val, 0, 0, Max});
-            palette.push_back({0, val, 0, Max});
-            palette.push_back({0, 0, val, Max});
+            for (CType ig = 0; ig < ChanMax; ++ig)
+            {
+                const CType g = Max / ChanMax * ig;
+
+                for (CType ib = 0; ib < ChanMax; ++ib)
+                {
+                    const CType b = Max / ChanMax * ib;
+
+                    palette.push_back({r, g, b, Max});
+                }
+            }
         }
+        palette.resize(colors);
 
         out_pixels.resize(width * height);
         for (size_t i = 0; i < in_pixels.size(); ++i)
