@@ -46,6 +46,8 @@ namespace Color::Quantize
 
             ~Node() noexcept
             {
+                for (int32_t i = 0; i < 8; ++i)
+                    delete _nodes[i];
             }
 
             //--- public operators ---
@@ -62,18 +64,18 @@ namespace Color::Quantize
             {
                 Nodes<Color,MaxDepth> nodes;
 
-                for (auto node : _nodes)
+                for (int32_t i = 0; i < 8; ++i)
                 {
-                    if (!node)
+                    if (!_nodes[i])
                         continue;
 
-                    if (!node->isLeaf())
+                    if (!_nodes[i]->isLeaf())
                     {
-                        auto lnodes = node->leafNodes();
+                        auto lnodes = _nodes[i]->leafNodes();
                         nodes.insert(nodes.end(), lnodes.begin(), lnodes.end());
                     }
                     else
-                        nodes.push_back(node);
+                        nodes.push_back(_nodes[i]);
                 }
 
                 return nodes;
@@ -83,17 +85,15 @@ namespace Color::Quantize
             {
                 int32_t result = 0;
 
-                for (auto node : _nodes)
+                for (int32_t i = 0; i < 8; ++i)
                 {
-                    if (node)
+                    if (_nodes[i])
                     {
-                        _color.r += node->_color.r;
-                        _color.g += node->_color.g;
-                        _color.b += node->_color.b;
-                        _count += node->_count;
+                        _color += _nodes[i]->_color;
+                        _count += _nodes[i]->_count;
                         ++result;
-                        delete node;
-                        node = nullptr;
+                        delete _nodes[i];
+                        _nodes[i] = nullptr;
                     }
                 }
 
@@ -104,9 +104,7 @@ namespace Color::Quantize
             {
                 if (level >= MaxDepth)
                 {
-                    _color.r += color.r;
-                    _color.g += color.g;
-                    _color.b += color.b;
+                    _color += color;
                     ++_count;
                 }
                 else
@@ -124,7 +122,7 @@ namespace Color::Quantize
                 return {static_cast<CType>(_color.r / _count),
                         static_cast<CType>(_color.g / _count),
                         static_cast<CType>(_color.b / _count),
-                        static_cast<CType>(_color.a / _count)};
+                        std::numeric_limits<CType>::max()};
             }
 
             void setPaletteIndex(const int32_t val) noexcept
@@ -138,10 +136,10 @@ namespace Color::Quantize
                 {
                     if (const int32_t index = colorIndex(color, level); !_nodes[index])
                     {
-                        for (auto node : _nodes)
+                        for (int32_t i = 0; i < 8; ++i)
                         {
-                            if (node)
-                                return node->paletteIndex(color, level + 1);
+                            if (_nodes[i])
+                                return _nodes[i]->paletteIndex(color, level + 1);
                         }
                     }
                     else
@@ -173,6 +171,7 @@ namespace Color::Quantize
 
             ~Octree() noexcept
             {
+                delete _root;
             }
 
             //--- public operators ---
@@ -210,9 +209,9 @@ namespace Color::Quantize
                 {
                     if (!_levels[level].empty())
                     {
-                        for (auto node : _levels[level])
+                        for (size_t i = 0; i < _levels[level].size(); ++i)
                         {
-                            if (lcount -= node->removeLeafs(); lcount <= max_colors)
+                            if (lcount -= _levels[level][i]->removeLeafs(); lcount <= max_colors)
                                 break;
                         }
                         if (lcount <= max_colors)
@@ -220,13 +219,15 @@ namespace Color::Quantize
                         _levels[level].clear();
                     }
                 }
-                for (auto node : leafNodes())
+
+		auto leaf_nodes = leafNodes();
+                for (size_t i = 0; i < leaf_nodes.size(); ++i)
                 {
                     if (pindex >= max_colors)
                         break;
-                    if (node->isLeaf())
-                        palette.push_back(node->color());
-                    node->setPaletteIndex(pindex);
+                    if (leaf_nodes[i]->isLeaf())
+                        palette.push_back(leaf_nodes[i]->color());
+                    leaf_nodes[i]->setPaletteIndex(pindex);
                     ++pindex;
                 }
 
