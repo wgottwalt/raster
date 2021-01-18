@@ -212,7 +212,7 @@ namespace Math
             return x * vec.x + y * vec.y;
         }
 
-        N crossProduct(const Vector2 &vec) const
+        N crossProduct(const Vector2 &vec) const noexcept
         {
             return (x * vec.y) - (y * vec.x);
         }
