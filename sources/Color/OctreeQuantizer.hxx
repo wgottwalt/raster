@@ -6,8 +6,8 @@
 #include "Common/Tools.hxx"
 #include "ColorDetail.hxx"
 
-// XXX: the createPalette() method does not priduce proper result (color values loose to much
-//      precision and the current implementation also leaks memory
+// XXX: the createPalette() method does not produce proper results (color values loose to much
+//      precision and the current implementation also leaks memory)
 
 namespace Color::Quantize
 {
