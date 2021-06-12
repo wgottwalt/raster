@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <limits>
 #include <tuple>
 #include <type_traits>
 
