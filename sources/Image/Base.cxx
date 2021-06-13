@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <execution>
 #include <map>
 #include <tuple>
 #include <utility>
@@ -121,16 +120,14 @@ namespace Image
     void Base::flipVertical()
     {
         for (int64_t row = 0; row < _height; ++row)
-            std::reverse(std::execution::par_unseq, _data.begin() + (row * _width),
-                         _data.begin() + (row * _width + _width));
+            std::reverse(_data.begin() + (row * _width), _data.begin() + (row * _width + _width));
     }
 
     void Base::flipHorizontal()
     {
         for (int64_t row = 0; row < _height; ++row)
-            std::reverse(std::execution::par_unseq, _data.begin() + (row * _width),
-                         _data.begin() + (row * _width + _width));
-        std::reverse(std::execution::par_unseq, _data.begin(), _data.end());
+            std::reverse(_data.begin() + (row * _width), _data.begin() + (row * _width + _width));
+        std::reverse(_data.begin(), _data.end());
     }
 
     bool Base::filter(const Filter filter)
@@ -371,16 +368,14 @@ namespace Image
             for (int64_t y = yy1; y < yy2; ++y)
             {
                 ypos = y * _width;
-                std::fill(std::execution::par_unseq, _data.begin() + ypos + xx1,
-                          _data.begin() + ypos + xx2 + 1, color);
+                std::fill(_data.begin() + ypos + xx1, _data.begin() + ypos + xx2 + 1, color);
             }
         }
         else
         {
             int64_t ypos = yy1 * _width;
 
-            std::fill(std::execution::par_unseq, _data.begin() + ypos + xx1,
-                      _data.begin() + ypos + xx2 + 1, color);
+            std::fill(_data.begin() + ypos + xx1, _data.begin() + ypos + xx2 + 1, color);
             for (int64_t y = yy1; y <= yy2; ++y)
             {
                 ypos = y * _width;
@@ -388,8 +383,7 @@ namespace Image
                 _data[ypos + xx2] = color;
             }
             ypos = yy2 * _width;
-            std::fill(std::execution::par_unseq, _data.begin() + ypos + xx1,
-                      _data.begin() + ypos + xx2 + 1, color);
+            std::fill(_data.begin() + ypos + xx1, _data.begin() + ypos + xx2 + 1, color);
         }
     }
 

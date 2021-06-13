@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <execution>
 #include <limits>
 #include <map>
 #include <vector>
@@ -63,7 +62,7 @@ namespace Color::Quantize
         blue = upper_blue - lower_blue;
         max = Common::Tools::max(red, green, blue);
 
-        std::sort(std::execution::par_unseq, tmp.begin(), tmp.end(),
+        std::sort(tmp.begin(), tmp.end(),
         [&](const RGBA &c1, const RGBA &c2)
         {
             if (max == red)
