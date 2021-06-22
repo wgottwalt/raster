@@ -19,6 +19,7 @@ namespace Color::Dithering
     template <Concept::RGBA Color>
     std::vector<Color> apply(const std::vector<Color> &pixels, const std::vector<Color> &palette,
                              const int64_t width, const int64_t height, const Algorithm alg)
+        noexcept(false)
     {
         const uint64_t psize = palette.size();
         const int32_t Max = std::numeric_limits<decltype(Color::r)>::max();

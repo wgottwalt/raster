@@ -22,7 +22,7 @@ namespace Color::Quantize
         using Colors = std::vector<Color>;
 
         template <Concept::RGBA Color>
-        constexpr inline int32_t colorIndex(const Color &c, const int32_t l)
+        constexpr inline int32_t colorIndex(const Color &c, const int32_t l) noexcept
         {
             return (((c.r >> l) & 1) << 2) + (((c.g >> l) & 1) << 1) + ((c.b >> l) & 1);
         }
@@ -34,7 +34,7 @@ namespace Color::Quantize
             using CType = decltype(Color::r);
 
             //--- public constructors ---
-            Node(const int32_t level, Octree<Color,MaxDepth> *parent)
+            Node(const int32_t level, Octree<Color,MaxDepth> *parent) noexcept(false)
             : _nodes(), _color(), _count(0), _pindex()
             {
                 if (level < (MaxDepth - 1))
@@ -60,7 +60,7 @@ namespace Color::Quantize
                 return _count;
             }
 
-            Nodes<Color,MaxDepth> leafNodes() const
+            Nodes<Color,MaxDepth> leafNodes() const noexcept(false)
             {
                 Nodes<Color,MaxDepth> nodes;
 
@@ -81,7 +81,7 @@ namespace Color::Quantize
                 return nodes;
             }
 
-            int32_t removeLeafs()
+            int32_t removeLeafs() noexcept
             {
                 int32_t result = 0;
 
@@ -101,6 +101,7 @@ namespace Color::Quantize
             }
 
             void addColor(const Color &color, const int32_t level, Octree<Color,MaxDepth> *parent)
+                noexcept(false)
             {
                 if (level >= MaxDepth)
                 {
@@ -161,7 +162,7 @@ namespace Color::Quantize
         class Octree {
         public:
             //--- public constructors ---
-            Octree()
+            Octree() noexcept(false)
             : _levels(), _root(new Node<Color,MaxDepth>(0, this))
             {
             }
@@ -179,17 +180,17 @@ namespace Color::Quantize
             Octree &operator=(Octree &&rhs) = delete;
 
             //--- public methods ---
-            Nodes<Color,MaxDepth> leafNodes() const
+            Nodes<Color,MaxDepth> leafNodes() const noexcept(false)
             {
                 return _root->leafNodes();
             }
 
-            void addLevelNode(const int32_t level, Node<Color,MaxDepth> *node)
+            void addLevelNode(const int32_t level, Node<Color,MaxDepth> *node) noexcept(false)
             {
                 _levels[level].push_back(node);
             }
 
-            void addColor(const Color &color)
+            void addColor(const Color &color) noexcept(false)
             {
                 _root->addColor(color, 0, this);
             }
@@ -199,7 +200,7 @@ namespace Color::Quantize
                 return _root->paletteIndex(color, 0);
             }
 
-            Colors<Color> createPalette(const int32_t max_colors)
+            Colors<Color> createPalette(const int32_t max_colors) noexcept(false)
             {
                 Colors<Color> palette;
                 int32_t pindex = 0;
@@ -220,7 +221,7 @@ namespace Color::Quantize
                     }
                 }
 
-		auto leaf_nodes = leafNodes();
+                auto leaf_nodes = leafNodes();
                 for (size_t i = 0; i < leaf_nodes.size(); ++i)
                 {
                     if (pindex >= max_colors)
@@ -244,7 +245,7 @@ namespace Color::Quantize
     template <Common::Concept::Class RGBA>
     bool octree(const int64_t width, const int64_t height, const int64_t colors,
                 const std::vector<RGBA> &in_pixels, std::vector<RGBA> &out_pixels,
-                std::vector<RGBA> &palette)
+                std::vector<RGBA> &palette) noexcept(false)
     {
         if ((width < 1) || (height < 1))
             return false;

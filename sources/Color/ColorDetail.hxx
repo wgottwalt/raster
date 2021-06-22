@@ -19,7 +19,7 @@ namespace Color
 namespace Color::Detail
 {
     template <Concept::RGBA Color>
-    inline Color rgbaDistance(const Color &val1, const Color &val2)
+    inline Color rgbaDistance(const Color &val1, const Color &val2) noexcept
     {
         using VType = decltype(Color::value);
 
@@ -30,7 +30,7 @@ namespace Color::Detail
     }
 
     template <Concept::RGBA Color>
-    size_t closestMatch(const Color &pixel, const std::vector<Color> &palette)
+    size_t closestMatch(const Color &pixel, const std::vector<Color> &palette) noexcept
     {
         using VType = decltype(Color::value);
 

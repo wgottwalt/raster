@@ -62,6 +62,6 @@ namespace Color
         uint8_t averageRGBA() const noexcept;
         uint8_t grey() const noexcept;
         RGBA16161616 toRGBA16161616() const noexcept;
-        std::string str() const noexcept;
+        std::string str() const noexcept(false);
     };
 }

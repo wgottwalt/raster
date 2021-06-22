@@ -14,7 +14,7 @@ namespace Color::Quantize
     template <Common::Concept::Class RGBA>
     bool middleCut(const int64_t width, const int64_t height, const int64_t colors,
                    const std::vector<RGBA> &in_pixels, std::vector<RGBA> &out_pixels,
-                   std::vector<RGBA> &palette)
+                   std::vector<RGBA> &palette) noexcept(false)
     {
         using VType = decltype(RGBA::value);
         using CType = decltype(RGBA::r);

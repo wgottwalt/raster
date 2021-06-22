@@ -162,7 +162,7 @@ namespace Color
                 static_cast<uint8_t>(b >> 8), static_cast<uint8_t>(a >> 8)};
     }
 
-    std::string RGBA16161616::str() const noexcept
+    std::string RGBA16161616::str() const noexcept(false)
     {
         return std::to_string(r) + ", " + std::to_string(g) + ", " +
                std::to_string(b) + ", " + std::to_string(a);
