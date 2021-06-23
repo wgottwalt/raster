@@ -3,7 +3,7 @@
 namespace Common::Tools
 {
     std::string trim(const std::string &data, const char delim, const bool at_start,
-                     const bool at_end)
+                     const bool at_end) noexcept
     {
         std::string tmp(data);
 
@@ -17,7 +17,7 @@ namespace Common::Tools
         return tmp;
     }
 
-    std::string trim(const std::string &data, const bool at_start, const bool at_end)
+    std::string trim(const std::string &data, const bool at_start, const bool at_end) noexcept
     {
         std::string tmp(data);
 

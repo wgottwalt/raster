@@ -98,7 +98,7 @@ namespace Common::Tools
     //--- string manipulation ---
 
     template <typename T1, typename T2>
-    size_t countSubSequences(T1 from_it, T2 to_it, T1 search_from_it, T2 search_to_it)
+    size_t countSubSequences(T1 from_it, T2 to_it, T1 search_from_it, T2 search_to_it) noexcept
     {
         const ssize_t source_seq_size = std::distance(from_it, to_it);
         const ssize_t search_seq_size = std::distance(search_from_it, search_to_it);
@@ -121,12 +121,13 @@ namespace Common::Tools
     }
 
     template <typename T>
-    size_t countSubSequences(const T &val1, const T &val2)
+    size_t countSubSequences(const T &val1, const T &val2) noexcept
     {
         return countSubSequences(val1.begin(), val1.end(), val2.begin(), val2.end());
     }
 
     std::string trim(const std::string &data, const char delim, const bool at_start = true,
-                     const bool at_end = true);
-    std::string trim(const std::string &data, const bool at_start = true, const bool at_end = true);
+                     const bool at_end = true) noexcept;
+    std::string trim(const std::string &data, const bool at_start = true, const bool at_end = true)
+        noexcept;
 }

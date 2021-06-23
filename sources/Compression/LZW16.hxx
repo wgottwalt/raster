@@ -8,22 +8,22 @@ namespace Compression
     class LZW16 {
     public:
         //--- public constructors ---
-        LZW16();
+        LZW16() noexcept;
         LZW16(const LZW16 &rhs) = delete;
         LZW16(LZW16 &&rhs) = delete;
-        ~LZW16();
+        ~LZW16() noexcept;
 
         //--- public operators ---
         LZW16 &operator=(const LZW16 &rhs) = delete;
         LZW16 &operator=(LZW16 &&rhs) = delete;
 
         //--- public methods ---
-        uint64_t bytesRead() const;
-        uint64_t bytesWritten() const;
-        void reset();
-        bool done() const;
-        void encode(std::istream &is, std::ostream &os);
-        void decode(std::istream &is, std::ostream &os);
+        uint64_t bytesRead() const noexcept;
+        uint64_t bytesWritten() const noexcept;
+        void reset() noexcept;
+        bool done() const noexcept;
+        void encode(std::istream &is, std::ostream &os) noexcept(false);
+        void decode(std::istream &is, std::ostream &os) noexcept(false);
 
     private:
         //--- private properties ---

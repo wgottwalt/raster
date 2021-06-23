@@ -18,14 +18,14 @@ namespace Compression
             uint16_t first, left, right;
             uint8_t symbol;
 
-            Node(const uint8_t sym)
+            Node(const uint8_t sym) noexcept
             : first(Max), left(Max), right(Max), symbol(sym)
             {
             }
         };
 
         //--- public constructors ---
-        Dictionary()
+        Dictionary() noexcept(false)
         : _nodes()
         {
             _nodes.reserve(Max);
@@ -35,7 +35,7 @@ namespace Compression
         Dictionary(const Dictionary &rhs) = delete;
         Dictionary(Dictionary &&rhs) = delete;
 
-        ~Dictionary()
+        ~Dictionary() noexcept
         {
         }
 
@@ -44,14 +44,14 @@ namespace Compression
         Dictionary &operator=(Dictionary &&rhs) = delete;
 
         //--- public methods ---
-        void reset()
+        void reset() noexcept(false)
         {
             _nodes.clear();
             for (uint16_t i = 0; i < 256; ++i)
                 _nodes.push_back(Node(i));
         }
 
-        uint16_t insert(const uint16_t code, const uint8_t symbol)
+        uint16_t insert(const uint16_t code, const uint8_t symbol) noexcept(false)
         {
             if (_nodes.size() == Max)
                 reset();
@@ -106,40 +106,40 @@ namespace Compression
 
     //--- public constructors ---
 
-    LZW16::LZW16()
+    LZW16::LZW16() noexcept
     : _bytes_in(0), _bytes_out(0), _done(false)
     {
     }
 
-    LZW16::~LZW16()
+    LZW16::~LZW16() noexcept
     {
     }
 
     //--- public methods ---
 
-    uint64_t LZW16::bytesRead() const
+    uint64_t LZW16::bytesRead() const noexcept
     {
         return _bytes_in;
     }
 
-    uint64_t LZW16::bytesWritten() const
+    uint64_t LZW16::bytesWritten() const noexcept
     {
         return _bytes_out;
     }
 
-    void LZW16::reset()
+    void LZW16::reset() noexcept
     {
         _bytes_in = 0;
         _bytes_out = 0;
         _done = false;
     }
 
-    bool LZW16::done() const
+    bool LZW16::done() const noexcept
     {
         return _done;
     }
 
-    void LZW16::encode(std::istream &is, std::ostream &os)
+    void LZW16::encode(std::istream &is, std::ostream &os) noexcept(false)
     {
         Dictionary dict;
         uint16_t code = Max;
@@ -169,7 +169,7 @@ namespace Compression
         _done = true;
     }
 
-    void LZW16::decode(std::istream &is, std::ostream &os)
+    void LZW16::decode(std::istream &is, std::ostream &os) noexcept(false)
     {
         std::map<uint16_t, std::string> dict;
         std::string str;
