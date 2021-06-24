@@ -7,13 +7,13 @@
 
 namespace T = Common::Tools;
 
-void usage(const char *appname)
+void usage(const char *appname) noexcept
 {
     std::cout << "usage: " << appname << " --input=<image file> --output=<image file> [options]\n"
               << std::endl;
 }
 
-int32_t main(int32_t argc, char **argv)
+int32_t main(int32_t argc, char **argv) noexcept(false)
 {
     if (argc > 1)
     {

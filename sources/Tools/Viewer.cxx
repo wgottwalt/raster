@@ -9,7 +9,7 @@
 namespace T = Common::Tools;
 namespace I = Image;
 
-void view(I::Base *base_image, std::string &title)
+void view(I::Base *base_image, std::string &title) noexcept(false)
 {
     Display *display = XOpenDisplay(nullptr);
     Visual *visual = DefaultVisual(display, 0);
@@ -49,7 +49,7 @@ void view(I::Base *base_image, std::string &title)
     XCloseDisplay(display);
 }
 
-void usage(const std::string &appname)
+void usage(const std::string &appname) noexcept
 {
     std::cout << "usage: " << appname << " <image filename> [options]\n"
               << "options:\n"
@@ -63,7 +63,7 @@ void usage(const std::string &appname)
               << std::endl;
 }
 
-int32_t main(int32_t argc, char **argv)
+int32_t main(int32_t argc, char **argv) noexcept(false)
 {
     std::string filename;
     I::Base *image = nullptr;
