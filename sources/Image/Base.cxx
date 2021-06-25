@@ -23,38 +23,38 @@ namespace Image
 
     //--- public constructors ---
 
-    Base::Base()
+    Base::Base() noexcept
     : _data(), _width(0), _height(0)
     {
     }
 
-    Base::Base(const int64_t width, const int64_t height, const RGBA color)
+    Base::Base(const int64_t width, const int64_t height, const RGBA color) noexcept(false)
     : _data(width * height, color), _width(width), _height(height)
     {
     }
 
-    Base::Base(const Pixels &pixels, const int64_t width, const int64_t height)
+    Base::Base(const Pixels &pixels, const int64_t width, const int64_t height) noexcept(false)
     : _data(pixels), _width(width), _height(height)
     {
     }
 
-    Base::Base(const Base &rhs)
+    Base::Base(const Base &rhs) noexcept(false)
     : _data(rhs._data), _width(rhs._width), _height(rhs._height)
     {
     }
 
-    Base::Base(Base &&rhs)
+    Base::Base(Base &&rhs) noexcept
     : _data(std::move(rhs._data)), _width(std::move(rhs._width)), _height(std::move(rhs._height))
     {
     }
 
-    Base::~Base()
+    Base::~Base() noexcept
     {
     }
 
     //--- public operators ---
 
-    Base &Base::operator=(const Base &rhs)
+    Base &Base::operator=(const Base &rhs) noexcept(false)
     {
         if (this != &rhs)
         {
@@ -66,7 +66,7 @@ namespace Image
         return *this;
     }
 
-    Base &Base::operator=(Base &&rhs)
+    Base &Base::operator=(Base &&rhs) noexcept
     {
         if (this != &rhs)
         {
@@ -107,7 +107,7 @@ namespace Image
         return _data;
     }
 
-    int64_t Base::usedColors() const
+    int64_t Base::usedColors() const noexcept(false)
     {
         std::map<uint64_t, uint64_t> color_map;
 
@@ -117,20 +117,20 @@ namespace Image
         return color_map.size();
     }
 
-    void Base::flipVertical()
+    void Base::flipVertical() noexcept(false)
     {
         for (int64_t row = 0; row < _height; ++row)
             std::reverse(_data.begin() + (row * _width), _data.begin() + (row * _width + _width));
     }
 
-    void Base::flipHorizontal()
+    void Base::flipHorizontal() noexcept(false)
     {
         for (int64_t row = 0; row < _height; ++row)
             std::reverse(_data.begin() + (row * _width), _data.begin() + (row * _width + _width));
         std::reverse(_data.begin(), _data.end());
     }
 
-    bool Base::filter(const Filter filter)
+    bool Base::filter(const Filter filter) noexcept(false)
     {
         if ((_width > 2) && (_height > 2))
         {
@@ -144,7 +144,7 @@ namespace Image
         return false;
     }
 
-    bool Base::reduceColors(const int64_t colors, const Quantizer quantizer)
+    bool Base::reduceColors(const int64_t colors, const Quantizer quantizer) noexcept(false)
     {
         Pixels out_pixels;
         Pixels palette;
@@ -163,7 +163,7 @@ namespace Image
         return result;
     }
 
-    Base::RGBA Base::pixel(const int64_t x, const int64_t y) const
+    Base::RGBA Base::pixel(const int64_t x, const int64_t y) const noexcept(false)
     {
         if (T::inRange(x, 0, width()) && T::inRange(y, 0, height()))
             return implPixel(x, y);
@@ -171,7 +171,7 @@ namespace Image
             throw "POOF for now";
     }
 
-    bool Base::setPixel(const int64_t x, const int64_t y, const RGBA color)
+    bool Base::setPixel(const int64_t x, const int64_t y, const RGBA color) noexcept
     {
         if (T::inRange(x, 0, width()) && T::inRange(y, 0, height()))
         {
@@ -183,7 +183,7 @@ namespace Image
     }
 
     bool Base::setLine(const int64_t x1, const int64_t y1, const int64_t x2, const int64_t y2,
-                       const RGBA color)
+                       const RGBA color) noexcept
     {
         if (T::inRange(x1, 0, width()) && T::inRange(y1, 0, height()) &&
           T::inRange(x2, 0, width()) && T::inRange(y2, 0, height()))
@@ -197,6 +197,7 @@ namespace Image
 
     bool Base::setTriangle(const int64_t x1, const int64_t y1, const int64_t x2, const int64_t y2,
                            const int64_t x3, const int64_t y3, const RGBA color, const bool fill)
+        noexcept
     {
         if (T::inRange(x1, 0, width()) && T::inRange(y1, 0, height()) &&
           T::inRange(x2, 0, width()) && T::inRange(y2, 0, height()) &&
@@ -210,7 +211,7 @@ namespace Image
     }
 
     bool Base::setRectangle(const int64_t x1, const int64_t y1, const int64_t x2, const int64_t y2,
-                            const RGBA color, const bool fill)
+                            const RGBA color, const bool fill) noexcept
     {
         if (T::inRange(x1, 0, width()) && T::inRange(y1, 0, height()) &&
           T::inRange(x2, 0, width()) && T::inRange(y2, 0, height()))
@@ -223,7 +224,7 @@ namespace Image
     }
 
     bool Base::setCircle(const int64_t x, const int64_t y, const int64_t radius, const RGBA color,
-                         const bool fill)
+                         const bool fill) noexcept
     {
         const int64_t rad = std::abs(radius);
 
@@ -238,7 +239,7 @@ namespace Image
         return false;
     }
 
-    XImage *Base::cloneXImage(Display *display, Visual *visual) const
+    XImage *Base::cloneXImage(Display *display, Visual *visual) const noexcept
     {
         if (!display)
         {
@@ -276,17 +277,18 @@ namespace Image
 
     //--- protected methods ---
 
-    Base::RGBA Base::implPixel(const int64_t x, const int64_t y) const
+    Base::RGBA Base::implPixel(const int64_t x, const int64_t y) const noexcept
     {
         return _data[y * _width + x];
     }
 
-    void Base::implSetPixel(const int64_t x, const int64_t y, const RGBA color)
+    void Base::implSetPixel(const int64_t x, const int64_t y, const RGBA color) noexcept
     {
         _data[y * _width + x] = color;
     }
 
     void Base::implSetLine(int64_t x1, int64_t y1, int64_t x2, int64_t y2, const RGBA color)
+        noexcept
     {
         if ((x1 != x2) || (y1 != y2))
         {
@@ -322,7 +324,7 @@ namespace Image
 
     void Base::implSetTriangle(const int64_t x1, const int64_t y1, const int64_t x2,
                                const int64_t y2, const int64_t x3, const int64_t y3,
-                               const RGBA color, const bool fill)
+                               const RGBA color, const bool fill) noexcept
     {
         if (fill)
         {
@@ -356,7 +358,7 @@ namespace Image
     }
 
     void Base::implSetRectangle(const int64_t x1, const int64_t y1, const int64_t x2,
-                                const int64_t y2, const RGBA color, const bool fill)
+                                const int64_t y2, const RGBA color, const bool fill) noexcept
     {
         const auto [xx1, xx2] = T::minMax(x1, x2);
         const auto [yy1, yy2] = T::minMax(y1, y2);
@@ -388,7 +390,7 @@ namespace Image
     }
 
     void Base::implSetCircle(const int64_t x, const int64_t y, const int64_t radius,
-                             const RGBA color, const bool fill)
+                             const RGBA color, const bool fill) noexcept
     {
         const int64_t rad = std::abs(radius);
 
@@ -468,7 +470,7 @@ namespace Image
     }
 
     Base::Pixels Base::implFilter(const Pixels &pixels, const int64_t width, const int64_t height,
-                                  const Filter filter) const
+                                  const Filter filter) const noexcept(false)
     {
         Pixels result(width * height, RGBA::Black);
         std::vector<int64_t> indices = {-(width + 1), -width, -(width - 1),
@@ -572,6 +574,7 @@ namespace Image
     }
 
     bool Base::implResize(const int64_t width, const int64_t height, const Scaler scaler)
+        noexcept(false)
     {
         if ((width < 3) || (height < 3)) // scaling that low is useless
             return false;
@@ -645,14 +648,14 @@ namespace Image
         return true;
     }
 
-    void Base::implReplace(const Pixels &pixels, const int64_t width, const int64_t height)
+    void Base::implReplace(const Pixels &pixels, const int64_t width, const int64_t height) noexcept
     {
         _data = pixels;
         _width = width;
         _height = height;
     }
 
-    void Base::implReplace(Pixels &&pixels, const int64_t width, const int64_t height)
+    void Base::implReplace(Pixels &&pixels, const int64_t width, const int64_t height) noexcept
     {
         _data = std::move(pixels);
         _width = width;
