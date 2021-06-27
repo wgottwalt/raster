@@ -16,20 +16,20 @@ namespace Image
     {
     }
 
-    PPM::PPM(const std::string &filename)
+    PPM::PPM(const std::string &filename) noexcept(false)
     : Base(), _comment(""), _wide(false), _binary(false)
     {
         load(filename);
     }
 
-    PPM::PPM(const int64_t width, const int64_t height, const RGBA color)
+    PPM::PPM(const int64_t width, const int64_t height, const RGBA color) noexcept(false)
     : Base(T::inRange(width, MinWidth, MaxWidth) ? width : 1,
            T::inRange(height, MinHeight, MaxHeight) ? height : 1, color),
       _comment(""), _wide(false), _binary(false)
     {
     }
 
-    PPM::PPM(const Pixels &pixels, const int64_t width, const int64_t height)
+    PPM::PPM(const Pixels &pixels, const int64_t width, const int64_t height) noexcept(false)
     : Base(), _comment(""), _wide(false), _binary(false)
     {
         if ((static_cast<uint64_t>(width * height) == static_cast<uint64_t>(pixels.size())) &&
@@ -38,12 +38,12 @@ namespace Image
             implReplace(pixels, width, height);
     }
 
-    PPM::PPM(const PPM &rhs)
+    PPM::PPM(const PPM &rhs) noexcept(false)
     : Base(rhs), _comment(rhs._comment), _wide(rhs._wide), _binary(rhs._binary)
     {
     }
 
-    PPM::PPM(PPM &&rhs)
+    PPM::PPM(PPM &&rhs) noexcept
     : Base(std::move(rhs)), _comment(std::move(rhs._comment)), _wide(std::move(rhs._wide)),
       _binary(std::move(rhs._binary))
     {
@@ -55,7 +55,7 @@ namespace Image
 
     //--- public operators ---
 
-    PPM &PPM::operator=(const PPM &rhs)
+    PPM &PPM::operator=(const PPM &rhs) noexcept(false)
     {
         if (this != &rhs)
         {
@@ -68,7 +68,7 @@ namespace Image
         return *this;
     }
 
-    PPM &PPM::operator=(PPM &&rhs)
+    PPM &PPM::operator=(PPM &&rhs) noexcept
     {
         if (this != &rhs)
         {
@@ -96,32 +96,32 @@ namespace Image
 
     //--- public methods ---
 
-    std::string PPM::comment() const
+    std::string PPM::comment() const noexcept
     {
         return _comment;
     }
 
-    void PPM::setComment(const std::string &str)
+    void PPM::setComment(const std::string &str) noexcept(false)
     {
         _comment = str;
     }
 
-    bool PPM::wideMode() const
+    bool PPM::wideMode() const noexcept
     {
         return _wide;
     }
 
-    void PPM::setWideMode(const bool wide)
+    void PPM::setWideMode(const bool wide) noexcept(false)
     {
         _wide = wide;
     }
 
-    bool PPM::binaryMode() const
+    bool PPM::binaryMode() const noexcept
     {
         return _binary;
     }
 
-    void PPM::setBinaryMode(const bool bin)
+    void PPM::setBinaryMode(const bool bin) noexcept(false)
     {
         _binary = bin;
     }
@@ -134,7 +134,7 @@ namespace Image
                (static_cast<uint64_t>(pixels().size())) == static_cast<uint64_t>(width() * height());
     }
 
-    bool PPM::resize(const int64_t width, const int64_t height, const Scaler scaler)
+    bool PPM::resize(const int64_t width, const int64_t height, const Scaler scaler) noexcept(false)
     {
         if ((width <= MaxWidth) && (height <= MaxHeight))
             return implResize(width, height, scaler);
@@ -142,7 +142,7 @@ namespace Image
         return false;
     }
 
-    bool PPM::save(const std::string &filename) const
+    bool PPM::save(const std::string &filename) const noexcept(false)
     {
         if (!valid())
             return false;
@@ -202,7 +202,7 @@ namespace Image
         return false;
     }
 
-    bool PPM::load(const std::string &filename)
+    bool PPM::load(const std::string &filename) noexcept(false)
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
@@ -294,7 +294,7 @@ namespace Image
 
     //--- static public methods ---
 
-    bool PPM::identify(const std::string &filename)
+    bool PPM::identify(const std::string &filename) noexcept(false)
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
