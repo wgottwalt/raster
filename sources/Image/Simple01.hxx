@@ -26,32 +26,33 @@ namespace Image
 
         //--- public constructors ---
         Simple01() noexcept;
-        Simple01(const std::string &filename);
-        Simple01(const int64_t width, const int64_t height, const RGBA color = RGBA::Black);
-        Simple01(const Pixels &pixels, const int64_t width, const int64_t height);
-        Simple01(const Simple01 &rhs);
-        Simple01(Simple01 &&rhs);
+        Simple01(const std::string &filename) noexcept(false);
+        Simple01(const int64_t width, const int64_t height, const RGBA color = RGBA::Black)
+            noexcept(false);
+        Simple01(const Pixels &pixels, const int64_t width, const int64_t height) noexcept(false);
+        Simple01(const Simple01 &rhs) noexcept(false);
+        Simple01(Simple01 &&rhs) noexcept;
         virtual ~Simple01() noexcept;
 
         //--- public constructors ---
-        Simple01 &operator=(const Simple01 &rhs);
-        Simple01 &operator=(Simple01 &&rhs);
+        Simple01 &operator=(const Simple01 &rhs) noexcept(false);
+        Simple01 &operator=(Simple01 &&rhs) noexcept;
         bool operator==(const Simple01 &rhs) const noexcept;
         bool operator!=(const Simple01 &rhs) const noexcept;
 
         //--- public methods ---
         virtual bool valid() const override final;
         virtual bool resize(const int64_t width, const int64_t height, const Scaler scaler)
-                            override final;
-        virtual bool save(const std::string &filename) const override final;
-        virtual bool load(const std::string &filename) override final;
+            noexcept(false) override final;
+        virtual bool save(const std::string &filename) const noexcept(false) override final;
+        virtual bool load(const std::string &filename) noexcept(false) override final;
 
         //--- static public methods ---
-        static bool identify(const std::string &filename);
+        static bool identify(const std::string &filename) noexcept;
 
     protected:
         //--- proctected methods ---
-        std::string encodeRLE(const Pixels &pixels) const;
-        Pixels decodeRLE(const std::string &data) const;
+        std::string encodeRLE(const Pixels &pixels) const noexcept(false);
+        Pixels decodeRLE(const std::string &data) const noexcept(false);
     };
 }

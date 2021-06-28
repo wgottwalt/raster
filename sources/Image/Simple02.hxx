@@ -23,27 +23,28 @@ namespace Image
 
         //--- public constructors ---
         Simple02() noexcept;
-        Simple02(const std::string &filename);
-        Simple02(const int64_t width, const int64_t height, const RGBA color = RGBA::Black);
-        Simple02(const Pixels &pixels, const int64_t width, const int64_t height);
-        Simple02(const Simple02 &rhs);
-        Simple02(Simple02 &&rhs);
+        Simple02(const std::string &filename) noexcept(false);
+        Simple02(const int64_t width, const int64_t height, const RGBA color = RGBA::Black)
+            noexcept(false);
+        Simple02(const Pixels &pixels, const int64_t width, const int64_t height) noexcept(false);
+        Simple02(const Simple02 &rhs) noexcept(false);
+        Simple02(Simple02 &&rhs) noexcept;
         virtual ~Simple02() noexcept;
 
         //--- public constructors ---
-        Simple02 &operator=(const Simple02 &rhs);
-        Simple02 &operator=(Simple02 &&rhs);
+        Simple02 &operator=(const Simple02 &rhs) noexcept(false);
+        Simple02 &operator=(Simple02 &&rhs) noexcept;
         bool operator==(const Simple02 &rhs) const noexcept;
         bool operator!=(const Simple02 &rhs) const noexcept;
 
         //--- public methods ---
         virtual bool valid() const override final;
         virtual bool resize(const int64_t width, const int64_t height, const Scaler scaler)
-                            override final;
-        virtual bool save(const std::string &filename) const override final;
-        virtual bool load(const std::string &filename) override final;
+            noexcept(false) override final;
+        virtual bool save(const std::string &filename) const noexcept(false) override final;
+        virtual bool load(const std::string &filename) noexcept(false) override final;
 
         //--- static public methods ---
-        static bool identify(const std::string &filename);
+        static bool identify(const std::string &filename) noexcept;
     };
 }

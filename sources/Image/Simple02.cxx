@@ -20,19 +20,20 @@ namespace Image
     {
     }
 
-    Simple02::Simple02(const std::string &filename)
+    Simple02::Simple02(const std::string &filename) noexcept(false)
     : Base()
     {
         load(filename);
     }
 
-    Simple02::Simple02(const int64_t width, const int64_t height, const RGBA color)
+    Simple02::Simple02(const int64_t width, const int64_t height, const RGBA color) noexcept(false)
     : Base(T::inRange(width, MinWidth, MaxWidth) ? width : 1,
            T::inRange(height, MinHeight, MaxHeight) ? height : 1, color)
     {
     }
 
     Simple02::Simple02(const Pixels &pixels, const int64_t width, const int64_t height)
+        noexcept(false)
     : Base()
     {
         if ((static_cast<uint64_t>(width * height) == static_cast<uint64_t>(pixels.size())) &&
@@ -40,12 +41,12 @@ namespace Image
             implReplace(pixels, width, height);
     }
 
-    Simple02::Simple02(const Simple02 &rhs)
+    Simple02::Simple02(const Simple02 &rhs) noexcept(false)
     : Base(rhs)
     {
     }
 
-    Simple02::Simple02(Simple02 &&rhs)
+    Simple02::Simple02(Simple02 &&rhs) noexcept
     : Base(std::move(rhs))
     {
     }
@@ -56,7 +57,7 @@ namespace Image
 
     //--- public constructors ---
 
-    Simple02 &Simple02::operator=(const Simple02 &rhs)
+    Simple02 &Simple02::operator=(const Simple02 &rhs) noexcept(false)
     {
         if (this != &rhs)
             Base::operator=(rhs);
@@ -64,7 +65,7 @@ namespace Image
         return *this;
     }
 
-    Simple02 &Simple02::operator=(Simple02 &&rhs)
+    Simple02 &Simple02::operator=(Simple02 &&rhs) noexcept
     {
         if (this != &rhs)
             Base::operator=(std::move(rhs));
@@ -92,6 +93,7 @@ namespace Image
     }
 
     bool Simple02::resize(const int64_t width, const int64_t height, const Scaler scaler)
+        noexcept(false)
     {
         if ((width <= MaxWidth) && (height <= MaxHeight))
             return implResize(width, height, scaler);
@@ -99,7 +101,7 @@ namespace Image
         return false;
     }
 
-    bool Simple02::save(const std::string &filename) const
+    bool Simple02::save(const std::string &filename) const noexcept(false)
     {
         if (std::ofstream ofile(filename); valid() && ofile.is_open() && ofile.good())
         {
@@ -137,7 +139,7 @@ namespace Image
         return false;
     }
 
-    bool Simple02::load(const std::string &filename)
+    bool Simple02::load(const std::string &filename) noexcept(false)
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
@@ -210,7 +212,7 @@ namespace Image
 
     //--- static public methods ---
 
-    bool Simple02::identify(const std::string &filename)
+    bool Simple02::identify(const std::string &filename) noexcept
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
