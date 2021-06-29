@@ -31,7 +31,7 @@ namespace Image
     {
     }
 
-    Targa::Targa(const std::string &filename)
+    Targa::Targa(const std::string &filename) noexcept(false)
     : Base(), _colormap_type(0), _image_type(IT::Truecolor), _colormap_offset(0),
       _colormap_length(0), _colormap_entry_size(0), _x_origin(0), _y_origin(0), _depth(24),
       _image_descriptor(T::valueOf(IA::OriginTop)), _image_id(""), _version2(false),
@@ -40,7 +40,7 @@ namespace Image
         load(filename);
     }
 
-    Targa::Targa(const int64_t width, const int64_t height, const RGBA color)
+    Targa::Targa(const int64_t width, const int64_t height, const RGBA color) noexcept(false)
     : Base(T::inRange(width, MinWidth, MaxWidth) ? width : 0,
            T::inRange(height, MinHeight, MaxHeight) ? height : 0, color),
       _colormap_type(0), _image_type(IT::Truecolor), _colormap_offset(0),
@@ -50,7 +50,7 @@ namespace Image
     {
     }
 
-    Targa::Targa(const Pixels &pixels, const int64_t width, const int64_t height)
+    Targa::Targa(const Pixels &pixels, const int64_t width, const int64_t height) noexcept(false)
     : Base(), _colormap_type(0), _image_type(IT::Truecolor), _colormap_offset(0),
       _colormap_length(0), _colormap_entry_size(0), _x_origin(0), _y_origin(0), _depth(24),
       _image_descriptor(T::valueOf(IA::OriginTop)), _image_id(""), _version2(false),
@@ -61,7 +61,7 @@ namespace Image
             implReplace(pixels, width, height);
     }
 
-    Targa::Targa(const Targa &rhs)
+    Targa::Targa(const Targa &rhs) noexcept(false)
     : Base(rhs), _colormap_type(rhs._colormap_type), _image_type(rhs._image_type),
       _colormap_offset(rhs._colormap_offset), _colormap_length(rhs._colormap_length),
       _colormap_entry_size(rhs._colormap_entry_size), _x_origin(rhs._x_origin),
@@ -70,7 +70,7 @@ namespace Image
     {
     }
 
-    Targa::Targa(Targa &&rhs)
+    Targa::Targa(Targa &&rhs) noexcept
     : Base(std::move(rhs)), _colormap_type(std::move(rhs._colormap_type)),
       _image_type(std::move(rhs._image_type)), _colormap_offset(std::move(rhs._colormap_offset)),
       _colormap_length(std::move(rhs._colormap_length)),
@@ -88,7 +88,7 @@ namespace Image
 
     //--- public operators ---
 
-    Targa &Targa::operator=(const Targa &rhs)
+    Targa &Targa::operator=(const Targa &rhs) noexcept(false)
     {
         if (this != &rhs)
         {
@@ -110,7 +110,7 @@ namespace Image
         return *this;
     }
 
-    Targa &Targa::operator=(Targa &&rhs)
+    Targa &Targa::operator=(Targa &&rhs) noexcept
     {
         if (this != &rhs)
         {
@@ -156,23 +156,23 @@ namespace Image
 
     //--- public methods ---
 
-    std::string Targa::id() const
+    std::string Targa::id() const noexcept
     {
         return _image_id;
     }
 
-    void Targa::setId(const std::string &str)
+    void Targa::setId(const std::string &str) noexcept(false)
     {
         // well, id is limited to 255 chars
         _image_id = str.substr(0, 255);
     }
 
-    Targa::ImageType Targa::imageType() const
+    Targa::ImageType Targa::imageType() const noexcept
     {
         return _image_type;
     }
 
-    void Targa::setImageType(const ImageType type)
+    void Targa::setImageType(const ImageType type) noexcept(false)
     {
         switch (type)
         {
@@ -261,12 +261,12 @@ namespace Image
         _image_type = type;
     }
 
-    uint8_t Targa::depth() const
+    uint8_t Targa::depth() const noexcept
     {
         return _depth;
     }
 
-    bool Targa::setDepth(const uint8_t val)
+    bool Targa::setDepth(const uint8_t val) noexcept
     {
         if (!T::includes(val, 15, 16, 24, 32))
             return false;
@@ -319,23 +319,23 @@ namespace Image
         return true;
     }
 
-    bool Targa::isVersion2() const
+    bool Targa::isVersion2() const noexcept
     {
         return _version2;
     }
 
-    void Targa::setVersion2(const bool val)
+    void Targa::setVersion2(const bool val) noexcept
     {
         // setting version 2 (Targa spec 2.0) actually lowers RLE compression effiency
         _version2 = val;
     }
 
-    int64_t Targa::xOrigin() const
+    int64_t Targa::xOrigin() const noexcept
     {
         return _x_origin;
     }
 
-    bool Targa::setXOrigin(const int64_t val)
+    bool Targa::setXOrigin(const int64_t val) noexcept
     {
         if (T::inRange(val, MinWidth, MaxWidth))
         {
@@ -346,12 +346,12 @@ namespace Image
         return false;
     }
 
-    int64_t Targa::yOrigin() const
+    int64_t Targa::yOrigin() const noexcept
     {
         return _y_origin;
     }
 
-    bool Targa::setYOrigin(const int64_t val)
+    bool Targa::setYOrigin(const int64_t val) noexcept
     {
         if (T::inRange(val, MinHeight, MaxHeight))
         {
@@ -362,12 +362,12 @@ namespace Image
         return false;
     }
 
-    bool Targa::greyscaleMonochromeMode() const
+    bool Targa::greyscaleMonochromeMode() const noexcept
     {
         return _greyscale;
     }
 
-    void Targa::setGreyscaleMonochromeMode(const bool val)
+    void Targa::setGreyscaleMonochromeMode(const bool val) noexcept
     {
         _greyscale = val;
     }
@@ -380,6 +380,7 @@ namespace Image
     }
 
     bool Targa::resize(const int64_t width, const int64_t height, const Scaler scaler)
+        noexcept(false)
     {
         if ((width <= MaxWidth) && (height <= MaxHeight))
             return implResize(width, height, scaler);
@@ -387,7 +388,7 @@ namespace Image
         return false;
     }
 
-    bool Targa::save(const std::string &filename) const
+    bool Targa::save(const std::string &filename) const noexcept(false)
     {
         if (std::ofstream ofile(filename); valid() && ofile.is_open() && ofile.good())
         {
@@ -537,7 +538,7 @@ namespace Image
         return false;
     }
 
-    bool Targa::load(const std::string &filename)
+    bool Targa::load(const std::string &filename) noexcept(false)
     {
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
         {
@@ -631,7 +632,7 @@ namespace Image
 
     //--- static public methods ---
 
-    bool Targa::identify(const std::string &filename)
+    bool Targa::identify(const std::string &filename) noexcept(false)
     {
         // XXX: implement a proper check
         if (std::ifstream ifile(filename); ifile.is_open() && ifile.good())
@@ -652,7 +653,7 @@ namespace Image
 
     //--- protected methods ---
 
-    std::string Targa::genMappedData(Pixels &palette, const Pixels &pixels) const
+    std::string Targa::genMappedData(Pixels &palette, const Pixels &pixels) const noexcept(false)
     {
         // max palette size is 8192 bytes, so it could be 2048 32bit colors or 4096 15/16bit colors
         // but I never came across a Targa with more the 256 mapped colors
@@ -680,7 +681,7 @@ namespace Image
         return data;
     }
 
-    std::string Targa::genTruecolorData(const Pixels &pixels) const
+    std::string Targa::genTruecolorData(const Pixels &pixels) const noexcept(false)
     {
         std::string data;
 
@@ -739,7 +740,7 @@ namespace Image
         return data;
     }
 
-    std::string Targa::genMonoData(const Pixels &pixels) const
+    std::string Targa::genMonoData(const Pixels &pixels) const noexcept(false)
     {
         const Pixels palette{{0, 0, 0, MaxU16}, {MaxU16, MaxU16, MaxU16, MaxU16}};
         std::string data;
@@ -762,7 +763,7 @@ namespace Image
         return data;
     }
 
-    std::string Targa::genMappedRleData(Pixels &palette, const Pixels &pixels) const
+    std::string Targa::genMappedRleData(Pixels &palette, const Pixels &pixels) const noexcept(false)
     {
         const uint64_t MaxColors = 256;
         Pixels out;
@@ -863,7 +864,7 @@ namespace Image
         return data;
     }
 
-    std::string Targa::genTruecolorRleData(const Pixels &pixels) const
+    std::string Targa::genTruecolorRleData(const Pixels &pixels) const noexcept(false)
     {
         const uint64_t size = pixels.size();
         const uint64_t psize = (_depth + 1) / 8;
@@ -1145,7 +1146,7 @@ namespace Image
         return data;
     }
 
-    std::string Targa::genMonoRleData(const Pixels &pixels) const
+    std::string Targa::genMonoRleData(const Pixels &pixels) const noexcept(false)
     {
         const uint64_t size = pixels.size();
         std::vector<uint8_t> buffer;
@@ -1244,7 +1245,7 @@ namespace Image
         return data;
     }
 
-    Targa::Pixels Targa::loadMappedData(std::istream &is, const Header header) const
+    Targa::Pixels Targa::loadMappedData(std::istream &is, const Header header) const noexcept(false)
     {
         const uint64_t mapsize = header.colormap_length;
         Pixels colormap(mapsize, RGBA::Black);
@@ -1315,6 +1316,7 @@ namespace Image
     }
 
     Targa::Pixels Targa::loadTruecolorData(std::istream &is, const Header header) const
+        noexcept(false)
     {
         Pixels pixels(header.width * header.height);
 
@@ -1373,7 +1375,7 @@ namespace Image
         return pixels;
     }
 
-    Targa::Pixels Targa::loadMonoData(std::istream &is, const Header header) const
+    Targa::Pixels Targa::loadMonoData(std::istream &is, const Header header) const noexcept(false)
     {
         Pixels pixels(header.width * header.height);
         E::Union8 tmp;
@@ -1389,6 +1391,7 @@ namespace Image
     }
 
     Targa::Pixels Targa::loadMappedRleData(std::istream &is, const Header header) const
+        noexcept(false)
     {
         const uint64_t size = header.width * header.height;
         const uint64_t mapsize = header.colormap_length;
@@ -1477,6 +1480,7 @@ namespace Image
     }
 
     Targa::Pixels Targa::loadTruecolorRleData(std::istream &is, const Header header) const
+        noexcept(false)
     {
         const uint64_t size = header.width * header.height;
         Pixels pixels;
@@ -1597,6 +1601,7 @@ namespace Image
     }
 
     Targa::Pixels Targa::loadMonoRleData(std::istream &is, const Header header) const
+        noexcept(false)
     {
         const uint64_t size = header.width * header.height;
         Pixels pixels;

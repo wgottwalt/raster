@@ -68,58 +68,59 @@ namespace Image
 
         //--- public constructors ---
         Targa() noexcept;
-        Targa(const std::string &filename);
-        Targa(const int64_t width, const int64_t height, const RGBA color = RGBA::Black);
-        Targa(const Pixels &pixels, const int64_t width, const int64_t height);
-        Targa(const Targa &rhs);
-        Targa(Targa &&rhs);
+        Targa(const std::string &filename) noexcept(false);
+        Targa(const int64_t width, const int64_t height, const RGBA color = RGBA::Black)
+            noexcept(false);
+        Targa(const Pixels &pixels, const int64_t width, const int64_t height) noexcept(false);
+        Targa(const Targa &rhs) noexcept(false);
+        Targa(Targa &&rhs) noexcept;
         virtual ~Targa() noexcept;
 
         //--- public operators ---
-        Targa &operator=(const Targa &rhs);
-        Targa &operator=(Targa &&rhs);
+        Targa &operator=(const Targa &rhs) noexcept(false);
+        Targa &operator=(Targa &&rhs) noexcept;
         bool operator==(const Targa &rhs) const noexcept;
         bool operator!=(const Targa &rhs) const noexcept;
 
         //--- public methods ---
-        std::string id() const;
-        void setId(const std::string &str);
-        ImageType imageType() const;
-        void setImageType(const ImageType type);
-        uint8_t depth() const;
-        bool setDepth(const uint8_t val);
-        bool isVersion2() const;
-        void setVersion2(const bool val);
-        int64_t xOrigin() const;
-        bool setXOrigin(const int64_t val);
-        int64_t yOrigin() const;
-        bool setYOrigin(const int64_t val);
-        bool greyscaleMonochromeMode() const;
-        void setGreyscaleMonochromeMode(const bool val);
+        std::string id() const noexcept;
+        void setId(const std::string &str) noexcept(false);
+        ImageType imageType() const noexcept;
+        void setImageType(const ImageType type) noexcept(false);
+        uint8_t depth() const noexcept;
+        bool setDepth(const uint8_t val) noexcept;
+        bool isVersion2() const noexcept;
+        void setVersion2(const bool val) noexcept;
+        int64_t xOrigin() const noexcept;
+        bool setXOrigin(const int64_t val) noexcept;
+        int64_t yOrigin() const noexcept;
+        bool setYOrigin(const int64_t val) noexcept;
+        bool greyscaleMonochromeMode() const noexcept;
+        void setGreyscaleMonochromeMode(const bool val) noexcept;
 
         virtual bool valid() const override final;
         virtual bool resize(const int64_t width, const int64_t height, const Scaler scaler)
-                            override final;
-        virtual bool save(const std::string &filename) const override final;
-        virtual bool load(const std::string &filename) override final;
+            noexcept(false) override final;
+        virtual bool save(const std::string &filename) const noexcept(false) override final;
+        virtual bool load(const std::string &filename) noexcept(false) override final;
 
         //--- static public methods ---
-        static bool identify(const std::string &filename);
+        static bool identify(const std::string &filename) noexcept(false);
 
     protected:
         //--- protected methods ---
-        std::string genMappedData(Pixels &palette, const Pixels &pixels) const;
-        std::string genTruecolorData(const Pixels &pixels) const;
-        std::string genMonoData(const Pixels &pixels) const;
-        std::string genMappedRleData(Pixels &palette, const Pixels &pixels) const;
-        std::string genTruecolorRleData(const Pixels &pixels) const;
-        std::string genMonoRleData(const Pixels &pixels) const;
-        Pixels loadMappedData(std::istream &is, const Header header) const;
-        Pixels loadTruecolorData(std::istream &is, const Header header) const;
-        Pixels loadMonoData(std::istream &is, const Header header) const;
-        Pixels loadMappedRleData(std::istream &is, const Header header) const;
-        Pixels loadTruecolorRleData(std::istream &is, const Header header) const;
-        Pixels loadMonoRleData(std::istream &is, const Header header) const;
+        std::string genMappedData(Pixels &palette, const Pixels &pixels) const noexcept(false);
+        std::string genTruecolorData(const Pixels &pixels) const noexcept(false);
+        std::string genMonoData(const Pixels &pixels) const noexcept(false);
+        std::string genMappedRleData(Pixels &palette, const Pixels &pixels) const noexcept(false);
+        std::string genTruecolorRleData(const Pixels &pixels) const noexcept(false);
+        std::string genMonoRleData(const Pixels &pixels) const noexcept(false);
+        Pixels loadMappedData(std::istream &is, const Header header) const noexcept(false);
+        Pixels loadTruecolorData(std::istream &is, const Header header) const noexcept(false);
+        Pixels loadMonoData(std::istream &is, const Header header) const noexcept(false);
+        Pixels loadMappedRleData(std::istream &is, const Header header) const noexcept(false);
+        Pixels loadTruecolorRleData(std::istream &is, const Header header) const noexcept(false);
+        Pixels loadMonoRleData(std::istream &is, const Header header) const noexcept(false);
 
     private:
         //--- private properties ---
