@@ -38,7 +38,7 @@ namespace Image
         bool operator!=(const Simple02 &rhs) const noexcept;
 
         //--- public methods ---
-        virtual bool valid() const override final;
+        virtual bool valid() const noexcept(false) override final;
         virtual bool resize(const int64_t width, const int64_t height, const Scaler scaler)
             noexcept(false) override final;
         virtual bool save(const std::string &filename) const noexcept(false) override final;

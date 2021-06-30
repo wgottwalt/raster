@@ -372,7 +372,7 @@ namespace Image
         _greyscale = val;
     }
 
-    bool Targa::valid() const
+    bool Targa::valid() const noexcept(false)
     {
         return T::inRange(width(), MinWidth, MaxWidth) &&
                T::inRange(height(), MinHeight, MaxHeight) &&

@@ -126,7 +126,7 @@ namespace Image
         _binary = bin;
     }
 
-    bool PPM::valid() const
+    bool PPM::valid() const noexcept(false)
     {
         // having no pixels, aka a width/height of 0 is considert invalid, but the PPM image format
         // supports it

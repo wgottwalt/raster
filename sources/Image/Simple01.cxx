@@ -82,7 +82,7 @@ namespace Image
 
     //--- public methods ---
 
-    bool Simple01::valid() const
+    bool Simple01::valid() const noexcept(false)
     {
         return T::inRange(width(), MinWidth, MaxWidth) &&
                T::inRange(height(), MinHeight, MaxHeight) &&

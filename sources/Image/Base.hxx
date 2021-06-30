@@ -75,7 +75,7 @@ namespace Image
                        const bool fill) noexcept;
         XImage *cloneXImage(Display *display, Visual *visual) const noexcept;
 
-        virtual bool valid() const = 0;
+        virtual bool valid() const noexcept(false) = 0;
         virtual bool resize(const int64_t width, const int64_t height, const Scaler scaler)
             noexcept(false) = 0;
         virtual bool save(const std::string &filename) const noexcept(false) = 0;
