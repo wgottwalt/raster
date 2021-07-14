@@ -1,1 +1,1 @@
-ADD_LIBRARY (Common Tools.cxx)
+ADD_LIBRARY (Common Args.cxx Tools.cxx)
